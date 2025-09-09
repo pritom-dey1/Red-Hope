@@ -1,0 +1,25 @@
+{% extends 'donor/base.html' %}
+
+{% block title %}
+    DONATE
+{% endblock title %}
+    
+{% block main %}
+<div class="login-container">
+    <div class="overlay3"></div>
+<form method="post" class="donate_form" >
+    <h2 >Donate to {{ post.name }}</h2>
+
+  {% csrf_token %}
+  <input type="text" name="name" placeholder="Your Name" required>
+  <input  type="email" name="email" placeholder="Your Email" required>
+  <input type="text" name="phone" placeholder="Phone Number" required>
+  <label style="color: #fff;font-family: poppins;">Last Blood Donation Date:</label>
+  <input type="date" name="last_donation_date">
+  <button type="submit" class="btn">Submit</button>
+</form>
+
+ 
+</div>
+
+{% endblock %}

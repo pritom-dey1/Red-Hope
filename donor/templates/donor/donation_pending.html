@@ -1,0 +1,12 @@
+{% extends 'donor/base.html' %}
+{% block main %}
+<div class="login-container">
+<form style="color: #fff;">
+<h2>Donation Request Pending</h2>
+<p>Hi {{ donation.name }}, your request is <b style="color:orange;">Pending</b>.</p>
+<p>You will be notified once the receiver approves your donation.</p>
+<a href="{%url 'home'%}" style="font-weight: 700; color: #ffa500; text-transform: uppercase; font-family: poppins;">BACE TO HOME</a>
+</form>
+
+</div>
+{% endblock %}

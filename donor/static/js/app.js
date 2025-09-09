@@ -35,6 +35,10 @@ ScrollTrigger.scrollerProxy(".main", {
 // Refresh ScrollTrigger and Locomotive Scroll when window updates
 ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
 ScrollTrigger.refresh();
+window.addEventListener("load", () => {
+  locoScroll.update();
+  ScrollTrigger.refresh();
+});
 
 // ==========================
 // GSAP Animations

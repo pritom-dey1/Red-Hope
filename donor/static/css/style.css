@@ -33,10 +33,10 @@ a {
 .btn:hover {
   background-color: #b80000;
 }
-.main{
-  position: relative;
-   
-}
+/* .main {
+  min-height: 100%;
+  height: auto !important;
+} */
 /* ============================= */
 /* LOADER ANIMATION */
 /* ============================= */
@@ -864,3 +864,8 @@ border: 1px solid #ff2b2b;
   background: #ff83832f;
   border-radius: 5px;
 }
+.donate_form{
+gap: 10px !important;
+}
+
+
