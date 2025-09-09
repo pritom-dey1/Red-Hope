@@ -1,0 +1,152 @@
+{% extends 'donor/base.html' %}
+
+{% block title %}
+    PULSE
+{% endblock title %}
+    
+{% block main %}
+
+<div style="text-transform: uppercase;color: red;" class="pluse_banner">
+  <h1 >Blood Requests</h1>
+</div>
+
+<div class="posts">
+   <form method="get" style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
+  
+  <!-- Blood Group -->
+  <div class="select">
+      <select name="blood_group "  style="border: black 1px solid;  color: black;">
+    <option style="color: #fff;" value="all">All Blood Groups</option>
+    <option style="color: #fff;" value="A+">A+</option>
+    <option style="color: #fff;" value="A-">A-</option>
+    <option style="color: #fff;" value="B+">B+</option>
+    <option style="color: #fff;" value="B-">B-</option>
+    <option style="color: #fff;" value="AB+">AB+</option>
+    <option style="color: #fff;" value="AB-">AB-</option>
+    <option style="color: #fff;" value="O+">O+</option>
+    <option style="color: #fff;" value="O-">O-</option>
+  </select>
+
+  <!-- Location -->
+  <select name="location"  style="border: black 1px solid;  color: black;">
+    <option style="color: #fff;" value="all">All Districts</option>
+    <option style="color: #fff;" value="Dhaka">Dhaka</option>
+    <option style="color: #fff;" value="Chattogram">Chattogram</option>
+    <option style="color: #fff;" value="Rajshahi">Rajshahi</option>
+    <option style="color: #fff;" value="Khulna">Khulna</option>
+    <option style="color: #fff;" value="Barishal">Barishal</option>
+    <option style="color: #fff;" value="Sylhet">Sylhet</option>
+    <option style="color: #fff;" value="Rangpur">Rangpur</option>
+    <option style="color: #fff;" value="Mymensingh">Mymensingh</option>
+  </select>
+
+  <!-- Post Type -->
+  <select name="post_type"  style="border: black 1px solid; color: black;">
+    <option style="color: #fff;" value="all">All Posts</option>
+    <option style="color: #fff;" value="receiver">Receiver</option>
+    <option style="color: #fff;" value="donor">Donor</option>
+  </select>
+<button type="submit" class="btn">Filter</button>
+  </div>
+  
+</form>
+  {% for post in posts %}
+    <div class="post" id="post-{{ post.id }}" style="border:1px solid #ddd; padding:15px; margin-bottom:15px; border-radius:10px;">
+      
+      <!-- User Info -->
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+        <img src="{{ post.user.profile.profile_pic.url }}" 
+             alt="{{ post.user.username }}" 
+             style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:1px solid #ccc;">
+        <div>
+          <strong style="text-transform: uppercase;">{{ post.user.username }}</strong><br>
+          <small>{{ post.created_at|date:"M d, Y H:i" }}</small>
+        </div>
+      </div>
+
+      <!-- Post Content -->
+      <h3 style="color: red;">{{ post.name }} ({{ post.blood_group }})</h3>
+      <p><strong style="color: red;">Problem:</strong> {{ post.problem }}</p>
+      <p><strong style="color: red;">Location:</strong> {{ post.location }}</p>
+
+      <a href=""><button class="btn" style="margin-top: 10px;">DONATE NOW</button></a>
+
+      <!-- Comment toggle button -->
+      <button class="btn toggle-comments" data-post-id="{{ post.id }}">COMMENT</button>
+
+      <!-- Comment Section (Initially hidden) -->
+      <div class="comments-section" id="comments-{{ post.id }}" style="display:none; margin-top:10px;">
+        <div class="comment-list" ></div>
+
+        <!-- Comment Form -->
+        {% if user.is_authenticated %}
+        <form style="margin-top: 10px;" class="comment-form" data-post-id="{{ post.id }}">
+          {% csrf_token %}
+          <input type="text" name="text" placeholder="Write a comment..." required>
+          <button type="submit" style="background-color: transparent;
+          color:red; font-family: poppins;border: none; font-size: 18px;font-weight: 600;">Post</button>
+        </form>
+        {% else %}
+          <p style="color:red;">Please login to comment.</p>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <p style="text-align: center; text-transform: uppercase; color: red;">No requests yet.</p>
+  {% endfor %}
+</div>
+
+<!-- AJAX Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Toggle comments
+  document.querySelectorAll(".toggle-comments").forEach(btn => {
+    btn.addEventListener("click", function() {
+      let postId = this.dataset.postId;
+      let section = document.getElementById("comments-" + postId);
+
+      if (section.style.display === "none") {
+        // Show comments
+        fetch(`/comments/${postId}/`)
+          .then(res => res.json())
+          .then(data => {
+            let commentList = section.querySelector(".comment-list");
+            commentList.innerHTML = "";
+            data.comments.forEach(c => {
+              commentList.innerHTML += `<p style="text-transform: uppercase;background-color:#ff7b7b8a;width: fit-content; padding: 8px; border-radius: 5px; margin-top: 5px; "><b>${c.user}</b>: ${c.text} <small>(${c.created_at})</small></p>`;
+            });
+          });
+        section.style.display = "block";
+        this.innerText = "HIDE COMMENTS";
+      } else {
+        section.style.display = "none";
+        this.innerText = "COMMENT";
+      }
+    });
+  });
+
+  // Add comment
+  document.querySelectorAll(".comment-form").forEach(form => {
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      let postId = this.dataset.postId;
+      let formData = new FormData(this);
+      fetch(`/comments/${postId}/add/`, {
+        method: "POST",
+        body: formData,
+        headers: { "X-CSRFToken": this.querySelector("[name=csrfmiddlewaretoken]").value }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) {
+          let commentList = document.getElementById("comments-" + postId).querySelector(".comment-list");
+          commentList.innerHTML = `<p ><b >${data.user}</b>: ${data.text} <small>(${data.created_at})</small></p>` + commentList.innerHTML;
+          this.reset();
+        }
+      });
+    });
+  });
+});
+</script>
+
+{% endblock main %}

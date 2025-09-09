@@ -715,3 +715,152 @@ border: 1px solid #ff2b2b;
   height: 370px;
   object-position: center;
 }
+
+.dashboard{
+  position: relative;
+  width: 100%;
+  padding: 70px 0;
+  padding-top: 130px;
+  background: url('../img/dashboard.jpeg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.dash_box{
+  margin: 0 auto;
+  display: flex;
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  max-width: 1100px;
+}
+.profile_pic img{
+  height: 170px;
+  border: 1px solid #fff;
+  object-fit: cover;
+  object-position: center;
+  padding: 10px;
+  border-radius: 50%;
+  width: 170px;
+}
+.dash_box h2{
+  font-size: 16px;
+}
+.dashdetails{
+  display: flex;
+  gap: 20px;
+}
+.dash_content{
+  max-width: 1000px;
+  border-radius: 10px;
+  margin: 0 auto;
+  margin-top: 10px;
+  padding: 20px;
+  border: 1px solid #fff;
+}
+
+/* লুকিয়ে রাখি default input */
+input[type="file"] {
+  display: none;
+}
+
+/* Custom button */
+.custom-file-upload {
+  display: inline-block;
+  color: white;
+  font-weight: 400;
+  font-family: poppins;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+}
+.dp_change{
+  background-color: #ff00003a;
+  padding: 5px 10px;
+  border: 1px solid red;
+ 
+  border-radius: 5px;
+
+}
+
+.dp_change button{
+  background-color: transparent;
+  border: none;
+  border-radius: 3px;
+  padding: 5px;
+  border: 1px #fff solid;
+  color: #fff;
+}
+
+.blood_request input{
+   width: 100%;
+  border: #fff solid 1px;
+  
+  color: #fff;
+  
+  padding: 15px;
+  background: #ff83832f;
+  border-radius: 5px;
+
+}
+.blood_request input:focus{
+  outline: none;
+}
+.blood_request input::placeholder{
+  color: #fff;
+}
+.blood_request textarea::placeholder{
+  color: #fff;font-family: poppins;
+}
+.blood_request textarea:focus{
+  outline: none;
+}
+.blood_request textarea{
+     width: 100%;
+  border: #fff solid 1px;
+  
+  color: #fff;
+  padding: 25px 15px;
+
+  background: #ff83832f;
+  border-radius: 5px;
+}
+
+/* pulse style  */
+.pluse_banner{
+ width: 100%;
+ padding: 100px 0;
+ background: url('../img/login.jpg'); 
+ background-position: center;
+ background-repeat: no-repeat;
+ background-size: cover;
+}
+.pluse_banner h1{
+  text-align: center;
+  margin-top: 20px;
+  color: #fff;
+  text-transform: uppercase;
+}
+.posts{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 0;
+}
+.post{
+    background-color: #ff363652;
+  width: 100%;
+
+border: 1px solid #ff2b2b;
+  box-shadow: 0 0px 10px rgba(255, 0, 0, 0.801);
+}
+.comment-form input{
+     width: 30%;
+  border: #fff solid 1px;
+  
+  color: #ff7b7b8a;
+  
+  padding: 10px;
+  background: #ff83832f;
+  border-radius: 5px;
+}

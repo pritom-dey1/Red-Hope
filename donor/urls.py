@@ -7,6 +7,9 @@ from django.conf import settings
 urlpatterns = [
 
     path('', views.home, name='home'),
+    path('pluse', views.pluse, name = "pluse"),
+        path("comments/<int:post_id>/", views.get_comments, name="get_comments"),
+    path("comments/<int:post_id>/add/", views.add_comment, name="add_comment"),
     path("heroes/",views.heroes ,name = "heroes"),
     path("heroes/<int:pk>/", views.hero_detail, name="hero_detail"),
     path("about/",views.about ,name = "about"),

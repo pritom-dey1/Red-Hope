@@ -6,11 +6,38 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.mail import send_mail
 from .models import Profile
+from .models import  RequestPost
 import random
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, get_object_or_404
 from .models import Hero
+from django.views.decorators.csrf import csrf_exempt
+from .models import Comment, RequestPost
 
+def get_comments(request, post_id):
+    post = get_object_or_404(RequestPost, id=post_id)
+    comments = post.comments.all().order_by("-created_at")
+    data = []
+    for c in comments:
+        data.append({
+            "user": c.user.username,
+            "text": c.text,
+            "created_at": c.created_at.strftime("%b %d, %Y %H:%M"),
+        })
+    return JsonResponse({"comments": data})
+
+@csrf_exempt
+def add_comment(request, post_id):
+    if request.method == "POST" and request.user.is_authenticated:
+        text = request.POST.get("text")
+        post = get_object_or_404(RequestPost, id=post_id)
+        comment = Comment.objects.create(post=post, user=request.user, text=text)
+        return JsonResponse({
+            "user": comment.user.username,
+            "text": comment.text,
+            "created_at": comment.created_at.strftime("%b %d, %Y %H:%M")
+        })
+    return JsonResponse({"error": "Invalid request"}, status=400)
 def heroes(request):
     heroes = Hero.objects.all()
     print("Total heroes in DB:", heroes.count())
@@ -60,8 +87,51 @@ def donor_dashboard(request):
     return render(request, 'donor/donor_dashboard.html')
 def about(request):
     return render(request , 'donor/about.html')
+
+
 def receiver_dashboard(request):
-    return render(request, 'donor/receiver_dashboard.html')
+    if request.method == "POST":
+        if "profile_pic" in request.FILES:
+            profile = request.user.profile
+            profile.profile_pic = request.FILES["profile_pic"]
+            profile.save()
+            messages.success(request, "Profile picture updated successfully!")
+            return redirect("receiver_dashboard")
+
+        name = request.POST.get("name")
+        problem = request.POST.get("problem")
+        blood_group = request.POST.get("blood_group")
+        location = request.POST.get("location")
+
+        if name and problem and blood_group and location:
+            RequestPost.objects.create(
+                user=request.user,
+                name=name,
+                problem=problem,
+                blood_group=blood_group,
+                location=location
+            )
+            return redirect("pluse")
+
+    return render(request, "donor/receiver_dashboard.html")
+def pluse(request):
+    posts = RequestPost.objects.all().order_by("-created_at")
+
+    # Filters
+    blood_group = request.GET.get("blood_group")
+    location = request.GET.get("location")
+    post_type = request.GET.get("post_type")
+
+    if blood_group and blood_group != "all":
+        posts = posts.filter(blood_group=blood_group)
+
+    if location and location != "all":
+        posts = posts.filter(location=location)
+
+    if post_type and post_type != "all":
+        posts = posts.filter(post_type=post_type)
+
+    return render(request, "donor/pluse.html", {"posts": posts})
 # Temporary storage for verification codes
 verification_codes = {}
 

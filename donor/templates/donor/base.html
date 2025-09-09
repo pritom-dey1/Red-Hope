@@ -29,16 +29,24 @@
             <div class="links">
                 <a href="{% url 'home' %}">HOME</a>
                 <a href="{% url 'about'%}">ABOUT</a>
-                <a href="">PULSE</a>
+                <a href="{% url 'pluse' %}">PULSE</a>
                 <a href="{% url 'heroes'%}">OUR HEROES</a>
             </div>
 
             <!-- Login Button -->
 <div class="button">
     {% if user.is_authenticated and user.profile %}
-        <a href="{% url user.profile.role|add:'_dashboard' %}">
-            <button class="btn">DASHBOARD</button>
-        </a>
+        {% if request.resolver_match.url_name == user.profile.role|add:"_dashboard" %}
+            <!-- যদি user dashboard এ থাকে -->
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn">LOG OUT</button>
+            </form>
+        {% else %}
+            <a href="{% url user.profile.role|add:'_dashboard' %}">
+                <button class="btn">DASHBOARD</button>
+            </a>
+        {% endif %}
     {% else %}
         <a href="{% url 'login' %}">
             <button class="btn">LOG IN</button>

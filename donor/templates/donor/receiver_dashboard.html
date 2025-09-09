@@ -1,20 +1,63 @@
+{% extends 'donor/base.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Receiver Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-<h1>Welcome, {{ request.user.username }}!</h1>
-<h2>Receiver Dashboard</h2>
-<p>Your Blood Group: {{ request.user.profile.blood_group }}</p>
-<p>Account Type: Receiver</p>
-<form action="{% url 'logout' %}" method="post" style="display:inline;">
-    {% csrf_token %}
-    <button type="submit" class="btn">Logout</button>
-</form>
-</body>
-</html>
+{% block title %}
+  {{ request.user.username }} 
+{% endblock title %}
+
+{% block main %}
+<div class="dashboard">
+  <div class="dash_box">
+    <div class="profile_pic">
+      <img src="{{ request.user.profile.profile_pic.url }}" alt="Profile Picture" style="width:120px;height:120px;border-radius:50%;">
+    </div>
+     <!-- Profile Picture Upload Form -->
+    <form class="dp_change" action="{% url 'receiver_dashboard' %}" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <label for="profile_pic" class="custom-file-upload">Choose Profile Picture</label>
+<input id="profile_pic" type="file" name="profile_pic" accept="image/*">
+      <button type="submit" class="">Update Picture</button>
+    </form>
+    <h1>WELCOME, <span style="text-transform: uppercase;">{{ request.user.username }}!</span></h1>
+    <h2>Receiver Dashboard</h2>
+    <div class="dashdetails">
+      <p>Your Blood Group: {{ request.user.profile.blood_group }}</p>
+      <p>Account Type: Receiver</p>
+    </div>
+  </div>
+
+  <div class="dash_content">
+    <!-- Profile Update Form -->
+    <form class="blood_request"  action="{% url 'receiver_dashboard' %}" method="post">
+      {% csrf_token %}
+      <input type="text" name="name" placeholder="Your Name" required><br>
+      <textarea style="margin-top: 15px;" name="problem" placeholder="Write your problem" required></textarea><br>
+       <div class="select" style="margin-top: 10px;">
+              <select name="blood_group" required>
+        <option value="">Select Blood Group</option>
+        <option>A+</option><option>A-</option>
+        <option>B+</option><option>B-</option>
+        <option>O+</option><option>O-</option>
+        <option>AB+</option><option>AB-</option>
+      </select>
+      <select name="location" required>
+        <option value="">Select Location</option>
+        <option>Dhaka</option>
+        <option>Chattogram</option>
+        <option>Rajshahi</option>
+        <option>Khulna</option>
+        <option>Barishal</option>
+        <option>Sylhet</option>
+        <option>Rangpur</option>
+        <option>Mymensingh</option>
+      </select>
+       </div>
+      <button style="position: relative;
+      left: 50%;
+      transform: translateX(-50%);margin-top: 10px;" type="submit" class="btn">Post Request</button>
+    </form>
+
+  
+  </div>
+</div>
+{% endblock main %}
