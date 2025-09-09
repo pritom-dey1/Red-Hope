@@ -28,14 +28,8 @@
   </div>
    <div class="dash_content " style="color: #fff;">
     
-  <!-- ====== Tab Buttons ====== -->
-  <div class="tab-buttons" style="margin:20px 0; text-align:center;">
-    <button onclick="showTab('form')" class="btn">➕ Create Request</button>
-    <button onclick="showTab('posts')" class="btn">📋 My Posts</button>
-    <button onclick="showTab('donations')" class="btn">❤️ Donation Requests</button>
-  </div>
+ 
 
-  <!-- ====== Tab Content ====== -->
 
   <!-- Create Blood Request -->
   <div id="form" class="tab-content">
@@ -67,29 +61,13 @@
     </form>
   </div>
 
-  <!-- My Posts -->
-  <div id="posts" class="tab-content" style="display:none;">
-    <h3>Your Posts</h3>
-    {% for post in posts %}
-      <div style="margin-top: 10px; border:1px solid #ddd; padding:15px; border-radius: 10px; margin-bottom:15px;">
-        <h4 style="font-family: poppins; font-weight: 600;color: red;">{{ post.name }} ({{ post.blood_group }})</h4>
-        <p><b>Problem:</b> {{ post.problem }}</p>
-        <p><b>Location:</b> {{ post.location }}</p>
-        <small style="font-family: poppins;">Posted: {{ post.created_at }}</small>
-      </div>
-    {% empty %}
-      <p style="font-family: poppins; text-align: center;color: red;">You haven't created any posts yet.</p>
-    {% endfor %}
-  </div>
-
   <!-- Donation Requests -->
-  <div id="donations" class="tab-content" style="display:none;">
-    <h3>Donation Requests for Your Posts</h3>
+  <div id="donations" class="tab-content" >
+    <h3 style="text-align: center;text-transform: uppercase;margin-top: 10px;">Donation Requests for Your Posts</h3>
     {% for donation in donations %}
       <div style="margin-top: 10px; border:1px solid #ddd; padding:15px; border-radius: 10px; margin-bottom:15px;"">
         <p><b>Donor:</b> {{ donation.name }} ({{ donation.email }})</p>
-        <p><b>Phone:</b> {{ donation.phone }}</p>
-        <p><b>Post:</b> {{ donation.post.name }} ({{ donation.post.blood_group }})</p>
+      
         <p><b>Status:</b> {{ donation.status|capfirst }}</p>
         {% if messages %}
   <div class="messages">
@@ -109,12 +87,6 @@
   </div>
 </div>
 
-   </div>
-<!-- ====== JS for Tabs ====== -->
-<script>
-  function showTab(tabId) {
-    document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
-    document.getElementById(tabId).style.display = "block";
-  }
-</script>
+  </div>
+
 {% endblock main %}

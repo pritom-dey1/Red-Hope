@@ -336,10 +336,12 @@ def receiver_dashboard(request):
 # =========================
 # Posts (pluse feed)
 # =========================
+
 @login_required(login_url="login")
 def pluse(request):
     posts = RequestPost.objects.all().order_by("-created_at")
 
+    # --- Filtering ---
     blood_group = request.GET.get("blood_group")
     location = request.GET.get("location")
     post_type = request.GET.get("post_type")
@@ -353,9 +355,18 @@ def pluse(request):
     if post_type and post_type != "all":
         posts = posts.filter(post_type=post_type)
 
-    return render(request, "donor/pluse.html", {"posts": posts})
+    # --- Already sent requests by logged-in user ---
+    user_requests = []
+    if request.user.is_authenticated:
+        user_requests = DonationRequest.objects.filter(
+            donor=request.user
+        ).values_list("post_id", flat=True)
 
-
+    context = {
+        "posts": posts,
+        "user_requests": user_requests,
+    }
+    return render(request, "donor/pluse.html", context)
 # =========================
 # Static Pages
 # =========================

@@ -11,45 +11,46 @@
 </div>
 
 <div class="posts">
-   <form method="get" style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
-  
-  <!-- Blood Group -->
+<form method="get" style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
   <div class="select">
-      <select name="blood_group "  style="border: black 1px solid;  color: black;">
-    <option style="color: #fff;" value="all">All Blood Groups</option>
-    <option style="color: #fff;" value="A+">A+</option>
-    <option style="color: #fff;" value="A-">A-</option>
-    <option style="color: #fff;" value="B+">B+</option>
-    <option style="color: #fff;" value="B-">B-</option>
-    <option style="color: #fff;" value="AB+">AB+</option>
-    <option style="color: #fff;" value="AB-">AB-</option>
-    <option style="color: #fff;" value="O+">O+</option>
-    <option style="color: #fff;" value="O-">O-</option>
-  </select>
 
-  <!-- Location -->
-  <select name="location"  style="border: black 1px solid;  color: black;">
-    <option style="color: #fff;" value="all">All Districts</option>
-    <option style="color: #fff;" value="Dhaka">Dhaka</option>
-    <option style="color: #fff;" value="Chattogram">Chattogram</option>
-    <option style="color: #fff;" value="Rajshahi">Rajshahi</option>
-    <option style="color: #fff;" value="Khulna">Khulna</option>
-    <option style="color: #fff;" value="Barishal">Barishal</option>
-    <option style="color: #fff;" value="Sylhet">Sylhet</option>
-    <option style="color: #fff;" value="Rangpur">Rangpur</option>
-    <option style="color: #fff;" value="Mymensingh">Mymensingh</option>
-  </select>
+    <!-- Blood Group -->
+    <select name="blood_group" style="border: black 1px solid;  color: black;">
+      <option style="color: #fff;" value="all" {% if request.GET.blood_group == "all" or not request.GET.blood_group %}selected{% endif %}>All Blood Groups</option>
+      <option style="color: #fff;" value="A+" {% if request.GET.blood_group == "A+" %}selected{% endif %}>A+</option>
+      <option style="color: #fff;" value="A-" {% if request.GET.blood_group == "A-" %}selected{% endif %}>A-</option>
+      <option style="color: #fff;" value="B+" {% if request.GET.blood_group == "B+" %}selected{% endif %}>B+</option>
+      <option style="color: #fff;" value="B-" {% if request.GET.blood_group == "B-" %}selected{% endif %}>B-</option>
+      <option style="color: #fff;" value="AB+" {% if request.GET.blood_group == "AB+" %}selected{% endif %}>AB+</option>
+      <option style="color: #fff;" value="AB-" {% if request.GET.blood_group == "AB-" %}selected{% endif %}>AB-</option>
+      <option style="color: #fff;" value="O+" {% if request.GET.blood_group == "O+" %}selected{% endif %}>O+</option>
+      <option style="color: #fff;" value="O-" {% if request.GET.blood_group == "O-" %}selected{% endif %}>O-</option>
+    </select>
 
-  <!-- Post Type -->
-  <select name="post_type"  style="border: black 1px solid; color: black;">
-    <option style="color: #fff;" value="all">All Posts</option>
-    <option style="color: #fff;" value="receiver">Receiver</option>
-    <option style="color: #fff;" value="donor">Donor</option>
-  </select>
-<button type="submit" class="btn">Filter</button>
+    <!-- Location -->
+    <select name="location" style="border: black 1px solid;  color: black;">
+      <option style="color: #fff;" value="all" {% if request.GET.location == "all" or not request.GET.location %}selected{% endif %}>All Districts</option>
+      <option style="color: #fff;" value="Dhaka" {% if request.GET.location == "Dhaka" %}selected{% endif %}>Dhaka</option>
+      <option style="color: #fff;" value="Chattogram" {% if request.GET.location == "Chattogram" %}selected{% endif %}>Chattogram</option>
+      <option style="color: #fff;" value="Rajshahi" {% if request.GET.location == "Rajshahi" %}selected{% endif %}>Rajshahi</option>
+      <option style="color: #fff;" value="Khulna" {% if request.GET.location == "Khulna" %}selected{% endif %}>Khulna</option>
+      <option style="color: #fff;" value="Barishal" {% if request.GET.location == "Barishal" %}selected{% endif %}>Barishal</option>
+      <option style="color: #fff;" value="Sylhet" {% if request.GET.location == "Sylhet" %}selected{% endif %}>Sylhet</option>
+      <option style="color: #fff;" value="Rangpur" {% if request.GET.location == "Rangpur" %}selected{% endif %}>Rangpur</option>
+      <option style="color: #fff;" value="Mymensingh" {% if request.GET.location == "Mymensingh" %}selected{% endif %}>Mymensingh</option>
+    </select>
+
+    <!-- Post Type -->
+    <select name="post_type" style="border: black 1px solid; color: black;">
+      <option style="color: #fff;" value="all" {% if request.GET.post_type == "all" or not request.GET.post_type %}selected{% endif %}>All Posts</option>
+      <option style="color: #fff;" value="receiver" {% if request.GET.post_type == "receiver" %}selected{% endif %}>Receiver</option>
+      <option style="color: #fff;" value="donor" {% if request.GET.post_type == "donor" %}selected{% endif %}>Donor</option>
+    </select>
+
+    <button type="submit" class="btn">Filter</button>
   </div>
-  
 </form>
+
   {% for post in posts %}
     <div class="post" id="post-{{ post.id }}" style="border:1px solid #ddd; padding:15px; margin-bottom:15px; border-radius:10px;">
       
@@ -69,13 +70,16 @@
       <p><strong style="color: red;">Problem:</strong> {{ post.problem }}</p>
       <p><strong style="color: red;">Location:</strong> {{ post.location }}</p>
 
-    {% if post.status == "donated" %}
-    <button class="btn" style="background: gray;" onclick="showToast('This post is already donated!')">Donated ✅</button>
+{% if post.post_type == "donated" %}
+    <button class="btn" style="background: gray;">Donated ✅</button>
+{% elif user.is_authenticated and post.id in user_requests %}
+    <button class="btn" style="background: orange;">Already Sent ✅</button>
 {% else %}
     <a href="{% url 'donate_now' post.id %}">
         <button class="btn">Donate</button>
     </a>
 {% endif %}
+
 
       <!-- Comment toggle button -->
       <button class="btn toggle-comments" data-post-id="{{ post.id }}">COMMENT</button>
