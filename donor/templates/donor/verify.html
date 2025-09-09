@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Account</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<div class="login-container">
+    <div class="overlay3"></div>
+    <form method="post">
+        <h2>Verify Your Account</h2>
+        {% csrf_token %}
+        <p>A verification code has been sent to your email: <strong>{{ username }}</strong></p>
+        <input type="text" name="code" placeholder="Enter Verification Code" required>
+        <button type="submit" class="btn">Verify</button>
+
+        {% for message in messages %}
+            <p style="color:red;">{{ message }}</p>
+        {% endfor %}
+    </form>
+</div>
+</body>
+</html>

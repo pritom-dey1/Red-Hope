@@ -1,0 +1,103 @@
+{% extends 'donor/base.html' %}
+{% load static %}
+
+{% block title %}
+    ABOUT
+{% endblock title %}
+
+{% block main %}
+<div class="hero_about">
+    <div class="hero_about_top">
+        <img src="{% static 'img/logo.webp' %}" alt="">
+    </div>
+    <div class="hero_part_bottom">
+        <div class="hero_bottom_left">
+           <p>Our mission is to save lives by connecting blood donors with those in urgent need.  
+This platform makes it easier for volunteers to register as donors and for patients or hospitals to find safe, reliable, and nearby blood donors.  
+We believe every drop of blood can bring hope and a second chance to someone’s life.  
+Join us in building a community of compassion, where donating blood is not just a responsibility, but a way to make a lasting difference.
+</p>
+        </div>
+        <div class="hero_bottom_right">
+            <img src="{% static 'img/about.jpeg' %}" alt="">
+        </div>
+    </div>
+</div>
+ <div class="wing_show">
+            <h2>Our services</h2>
+            <div class="wing_card_wapper">
+                <div class="wing_card">
+                    <i class="ri-draft-fill"></i>
+                    <h3>Donor Registration  </h3>
+                    <P>   Create your donor profile within minutes and join a growing network of volunteers who are ready to save lives whenever there is a need for blood.  
+</P>
+                
+           
+                
+
+                </div>
+                <div class="wing_card">
+<i class="ri-hand-heart-fill"></i>                    <h3>Blood Request</h3>                    
+                    <P>   Patients and hospitals can easily submit requests and instantly connect with verified donors nearby, making the process faster and more reliable.  
+</P>
+                  
+
+                   
+
+
+                </div>
+                <div class="wing_card">
+<i class="ri-broadcast-line"></i>                    <h3 style="text-transform: uppercase;">Emergency Alert</h3>
+                    <P>   In urgent situations, our system automatically sends real-time notifications to the nearest donors so that critical needs can be met without delay.  
+</P>
+                  
+   
+                
+
+                </div>
+                <div class="wing_card">
+<i class="ri-shake-hands-fill"></i>                    <h3 style="text-transform: uppercase;">Donation Camps</h3>
+                    <P>   Stay updated about upcoming blood donation camps, community events, and drives where you can actively participate and contribute to the cause.  
+</P>
+                   
+               
+        
+                
+
+                </div>
+                <div class="wing_card">
+<i class="ri-mental-health-fill"></i>                    <h3>Health & Awareness</h3>
+                    <P>   Gain access to valuable resources about donor eligibility, health guidelines, and the life-saving benefits of donating blood regularly.  
+</P>
+                   
+                  
+                
+
+                </div>
+            </div>
+        </div>
+  
+<div class="static">
+    <h2>Our Impact</h2>
+    <div class="impact_boxs">
+        <div class="impact_box">
+            <span style="color: red; font-size: 20px; font-weight: 600;">1,251</span>
+            <p>Registered Donors</p>
+        </div>
+        <div class="impact_box">
+            <span style="color: red; font-size: 20px; font-weight: 600;">3,400</span>
+            <p>Registered Donors</p>
+        </div>
+        <div class="impact_box">
+            <span style="color: red; font-size: 20px; font-weight: 600;">1,800 </span>
+            <p>Patients Helped</p>
+        </div>
+        <div class="impact_box">
+            <span style="color: red; font-size: 20px; font-weight: 600;">25</span>
+            <p>Donation Camps Held</p>
+        </div>
+    </div>
+</div>
+   
+
+{% endblock main %}

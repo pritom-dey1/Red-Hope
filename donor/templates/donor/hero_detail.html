@@ -1,0 +1,23 @@
+{% extends 'donor/base.html' %}
+{% load static %}
+
+{% block title %}{{ hero.name }}{% endblock title %}
+
+{% block main %}
+<div class="hero_details_banner"
+style="background: url('{{ hero.image.url }}');
+width: 100%;
+background-size: cover;
+background-repeat: no-repeat;
+padding: 200px 0;">
+
+</div>
+
+<div class="hero_detail">
+    <h1 style="color: red;">{{ hero.name }}</h1>
+    <h2>{{ hero.title }}</h2>
+    <p style="margin-bottom: 15px;">{{ hero.description }}</p>
+    <a  class="btn " style="font-family: poppins; text-transform: uppercase;
+           " href="{% url 'heroes' %}" href="{% url 'heroes' %}">Back to all heroes</a>
+</div>
+{% endblock main %}

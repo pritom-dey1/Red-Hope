@@ -1,0 +1,20 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receiver Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<h1>Welcome, {{ request.user.username }}!</h1>
+<h2>Receiver Dashboard</h2>
+<p>Your Blood Group: {{ request.user.profile.blood_group }}</p>
+<p>Account Type: Receiver</p>
+<form action="{% url 'logout' %}" method="post" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn">Logout</button>
+</form>
+</body>
+</html>

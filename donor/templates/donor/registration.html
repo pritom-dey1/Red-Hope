@@ -1,0 +1,57 @@
+{% extends 'donor/base.html' %}
+
+{% block title %}
+    REGISTER
+{% endblock title %}
+    
+{% block main %}
+<div class="login-container">
+    <div class="overlay3"></div>
+    <form method="post" >
+        <h2>Create an Account</h2>
+        {% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li style=" list-style: none;text-transform: uppercase; color: rgb(255, 255, 255);">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Enter Username" required>
+        <input type="email" name="email" placeholder="Enter Email" required>
+        <input type="password" name="password1" placeholder="Enter Password" required>
+
+      <div class="select">
+            <!-- Blood Group Selection -->
+        <select name="blood_group" required>
+            <option value="" disabled selected>Select Blood Group</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+        </select>
+
+        <!-- Role Selection -->
+        <select name="role" required>
+            <option value="" disabled selected>Select Account Type</option>
+            <option value="donor">Donor</option>
+            <option value="receiver">Receiver</option>
+        </select>
+      </div>
+
+        <button type="submit" class="btn">Register</button>
+        
+        <p style="margin-top: 10px; color: #fff;">
+            Already have an account? 
+            <a href="{% url 'login' %}" style="color: red; font-family: poppins; text-transform: uppercase; font-size: 18px;">
+                Log In
+            </a>
+        </p>
+    </form>
+</div>
+
+{% endblock %}

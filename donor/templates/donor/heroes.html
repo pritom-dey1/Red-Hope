@@ -1,0 +1,27 @@
+{% extends 'donor/base.html' %}
+{% load static %}
+
+{% block title %}HEROES{% endblock title %}
+
+{% block main %}
+
+<div class="hero_banner">
+    <h1>SOME OF OUR HEROES</h1>
+</div>
+
+<div class="hero_list">
+    {% for hero in heroes %}
+        <div class="hero_card">
+            <img src="{{ hero.image.url }}" alt="{{ hero.name }}">
+            <h2 style="color: red;">{{ hero.name }}</h2>
+            <h3>{{ hero.title }}</h3>
+            <p style="margin-bottom: 15px;">{{ hero.description|truncatewords:20 }}</p>
+            <a class="btn " style="font-family: poppins; text-transform: uppercase;
+           " href="{% url 'hero_detail' hero.pk %}">See Story</a>
+        </div>
+    {% empty %}
+        <p style="color: red;
+        text-align: center; text-transform: uppercase;">No heroes added yet.</p>
+    {% endfor %}
+</div>
+{% endblock main %}

@@ -1,0 +1,155 @@
+{% extends 'donor/base.html' %}
+{% load static %}
+
+{% block title %}
+    HOME
+{% endblock title %}
+
+{% block main %}
+
+    <!-- ============================= -->
+    <!-- HERO SECTION -->
+    <!-- ============================= -->
+    <div class="hero">
+        <div class="overlay"></div>
+        <div class="hero-content">
+            <span class="hero-title">Be a Hero ———</span>
+            <h1>Donate Blood, Save Lives</h1>
+            <p>
+                Every single drop truly counts. By donating blood today, you can give hope, <br>
+                save lives, and bring comfort to those in urgent need. Your small act <br>
+                of kindness can make a huge difference in someone’s life.
+            </p>
+            <a href="#donate">
+                <button class="btn">Donate Now</button>
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- ABOUT SECTION -->
+    <!-- ============================= -->
+    <div class="about" id="about">
+        <h2>OUR VISION AND MISSION</h2>
+        <div class="card_box">
+            <!-- Vision -->
+            <div class="card">
+                <img src="{% static 'img/card1.jpg' %}" alt="Vision Image">
+                <h2>Our Vision</h2>
+                <p>
+                    To create a society where no life is lost due to blood shortage, by building a trusted and accessible 
+                    donation platform that connects donors and patients quickly.
+                </p>
+            </div>
+            <!-- Mission -->
+            <div class="card">
+                <img src="{% static 'img/card2.jpg' %}" alt="Mission Image">
+                <h2>Our Mission</h2>
+                <p>
+                    To connect blood donors and recipients instantly, ensuring safe, reliable, and easy donations 
+                    through community support, technology, transparency, and compassion.
+                </p>
+            </div>
+            <!-- Goal -->
+            <div class="card">
+                <img src="{% static 'img/card3.jpg' %}" alt="Goal Image">
+                <h2>Our Goal</h2>
+                <p>
+                    To spread awareness, encourage regular donations, and build a strong donor network that 
+                    can save lives anytime, anywhere, quickly, safely, and effectively.
+                </p>
+            </div>
+        </div>     
+    </div>
+
+    <!-- ============================= -->
+    <!-- HEROES SECTION -->
+    <!-- ============================= -->
+    <div class="heros" id="donors">
+        <h2>OUR HEROES</h2>
+        <div class="hero_box">
+            <div class="overlay2"></div>
+            <img src="{% static 'img/heros.webp' %}" alt="Heroes Image">
+            <p style="color: #fff; position: absolute; bottom: 3%; left: 2%; text-transform: uppercase; z-index: 3; font-size: 20px;">
+                Meet the heroes who give the gift of life. Their selfless act <br> saves countless lives every day.
+            </p>
+        </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- PARTNERS SECTION -->
+    <!-- ============================= -->
+    <section class="Partners" id="partners">
+        <h2>Our Partners</h2>
+        <div class="slider">
+            <div class="slider-items">
+                <!-- Logos -->
+                <img src="https://www.zarla.com/images/nike-logo-2400x2400-20220504.png?crop=1:1,smart&width=150&dpr=2" alt="Nike">
+                <img src="https://www.zarla.com/images/apple-logo-2400x2400-20220512-1.png?crop=1:1,smart&width=150&dpr=2" alt="Apple">
+                <img src="https://www.zarla.com/images/disney-logo-2400x2400-20220513-2.png?crop=1:1,smart&width=150&dpr=2" alt="Disney">
+                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/4/4d/Loon_%28company%29_logo.svg/800px-Loon_%28company%29_logo.svg.png" alt="Loon">
+                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/37/Jumpman_logo.svg/1200px-Jumpman_logo.svg.png" alt="Jumpman">
+                <img src="https://www.svgrepo.com/show/303123/bmw-logo.svg" alt="BMW">
+                <img src="https://brandlogos.net/wp-content/uploads/2014/12/starbucks_coffee_company-logo_brandlogos.net_9jqys.png" alt="Starbucks">
+                <!-- Repeat logos -->
+                <img src="https://www.zarla.com/images/nike-logo-2400x2400-20220504.png?crop=1:1,smart&width=150&dpr=2" alt="Nike">
+                <img src="https://www.zarla.com/images/apple-logo-2400x2400-20220512-1.png?crop=1:1,smart&width=150&dpr=2" alt="Apple">
+                <img src="https://www.zarla.com/images/disney-logo-2400x2400-20220513-2.png?crop=1:1,smart&width=150&dpr=2" alt="Disney">
+                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/4/4d/Loon_%28company%29_logo.svg/800px-Loon_%28company%29_logo.svg.png" alt="Loon">
+                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/37/Jumpman_logo.svg/1200px-Jumpman_logo.svg.png" alt="Jumpman">
+                <img src="https://www.svgrepo.com/show/303123/bmw-logo.svg" alt="BMW">
+                <img src="https://brandlogos.net/wp-content/uploads/2014/12/starbucks_coffee_company-logo_brandlogos.net_9jqys.png" alt="Starbucks">
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================= -->
+    <!-- FAQ SECTION -->
+    <!-- ============================= -->
+    <div class="faq" id="faq">
+        <h2>Quick Answers</h2>
+        <div class="faq-section">
+
+            <!-- FAQ Item 1 -->
+            <div class="faq-item" data-id="q1">
+                <div class="faq-question">Who can donate blood?</div>
+                <div class="faq-answer">
+                    Any healthy person aged 18–65 with a minimum weight of 50 kg can donate blood. Certain medical conditions may prevent donation temporarily or permanently.
+                </div>
+            </div>
+
+            <!-- FAQ Item 2 -->
+            <div class="faq-item" data-id="q2">
+                <div class="faq-question">How often can I donate blood?</div>
+                <div class="faq-answer">
+                    You can donate whole blood every 3–4 months. Platelet or plasma donations have different intervals. Always follow guidelines given at the donation center.
+                </div>
+            </div>
+
+            <!-- FAQ Item 3 -->
+            <div class="faq-item" data-id="q3">
+                <div class="faq-question">What happens after I donate blood?</div>
+                <div class="faq-answer">
+                    You will rest for a few minutes, receive refreshments, and be monitored for any side effects. Most donors can resume normal activities immediately.
+                </div>
+            </div>
+
+            <!-- FAQ Item 4 -->
+            <div class="faq-item" data-id="q4">
+                <div class="faq-question">Is blood donation safe?</div>
+                <div class="faq-answer">
+                    Yes, blood donation is safe. Sterile, single-use equipment is used, and the process is monitored by trained medical staff.
+                </div>
+            </div>
+
+            <!-- FAQ Item 5 -->
+            <div class="faq-item" data-id="q5">
+                <div class="faq-question">What should I do before donating blood?</div>
+                <div class="faq-answer">
+                    Eat a healthy meal, stay hydrated, avoid alcohol, and get enough rest. Bring a valid ID to the donation center.
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock main %}

@@ -1,0 +1,28 @@
+{% extends 'donor/base.html' %}
+
+{% block title %}
+    LOG IN
+{% endblock title %}
+    
+{% block main %}
+<div class="login-container">
+    <div class="overlay3"></div>
+    <form method="post">
+            
+
+        {% csrf_token %}
+        <h2>Login here</h2>
+        <input type="text" name="username" placeholder="Enter Username">
+        <input type="password" name="password" placeholder="Enter Password">
+        <button type="submit" class="btn log_btn">Log In</button>
+       <p style="margin-top: 10px; text-align: center; color: #fff;">
+        Don’t have an account? 
+        <a href="{% url 'register' %}" style="color: red; font-family: poppins;text-transform: uppercase;">
+            Register
+        </a>
+    </p>
+    </form>
+
+ 
+</div>
+{% endblock %}
