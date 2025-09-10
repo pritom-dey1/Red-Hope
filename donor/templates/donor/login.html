@@ -12,6 +12,23 @@
 
         {% csrf_token %}
         <h2>Login here</h2>
+             {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                {%if message.tags == 'error'%}
+                <p style="color: red;text-align: center;">  {{ message }}</p>
+                {% else %}
+                <p style="display: none;">  {{ message }}</p>
+                 {% endif %}
+
+                    <!-- <p style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};{% if message.tags == 'error' %}red{% else %}display:no{% endif %}
+                              text-align: center;
+                              font-family: poppins;">
+                        {{ message }}
+                    </p> -->
+                {% endfor %}
+            </div>
+        {% endif %}
         <input type="text" name="username" placeholder="Enter Username">
         <input type="password" name="password" placeholder="Enter Password">
         <button type="submit" class="btn log_btn">Log In</button>

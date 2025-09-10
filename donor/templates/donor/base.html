@@ -59,8 +59,48 @@
     <!-- ============================= -->
     <!-- MAIN CONTENT SECTION -->
     <!-- ============================= -->
-    
-   
+<div id="notification-btn">
+    <i class="ri-notification-3-fill" style="font-size: 24px;"></i>
+    <span id="notif-count" 
+          style="position: absolute; top: -5px; right: -5px; 
+                 background: red; color: white; 
+                 font-size: 12px; font-weight: bold; 
+                 padding: 2px 6px; border-radius: 50%; 
+                 display: none;">
+    </span>
+</div>
+
+<div id="notification-modal">
+    <h4 style="font-family: poppins;
+    color: #fff;">Notifications</h4>
+    <div id="notification-list">
+        <p>Loading...</p>
+    </div>
+</div>
+   <!-- chat button (fixed) -->
+<div id="chat-btn" >
+<i style="font-size: 25px;" class="ri-chat-voice-fill"></i><span id="chat-unread" style="display:none; position:absolute; top:-8px; right:-8px; background:red; color:#fff; padding:2px 6px; border-radius:50%;">0</span>
+</div>
+
+<!-- chat modal -->
+<div id="chat-modal">
+  <div style="display:flex; height:100%;">
+    <div id="chat-users" style=" border-right:1px solid #222; overflow:auto; padding:8px;">
+      <h4 style="font-size:14px; text-transform: uppercase;text-transform: uppercase; font-family: roboto;">Users</h4>
+      <ul id="user-list" style="list-style:none; padding:0; margin:0; text-transform: uppercase;font-family: poppins;"></ul>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column;">
+      <div id="chat-header" style="padding:8px; border-bottom:1px solid #222; text-transform: uppercase; font-family: poppins;">Select a user</div>
+      <div id="chat-history" style="flex:1; padding:8px; overflow:auto; font-family: poppins;"></div>
+      <form id="chat-form" style="display:flex; padding:8px; border-top:1px solid #222;">
+        {% csrf_token %}
+        <input id="chat-input" type="text" placeholder="Type message..." style="flex:1; padding:8px; border-radius:6px; border:1px solid #333; background:#0b0b0b; color:#fff;">
+        <button type="submit" style="   margin-left:8px; padding:8px 12px; border-radius: 5px; border: none;">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+
         
     <div class="main">
         {% block main %}
@@ -111,49 +151,17 @@
     <!-- ============================= -->
     <!-- JAVASCRIPT FILES & CDN LINKS -->
     <!-- ============================= -->
-     <script>
-        
-document.getElementById("contactForm").addEventListener("submit", function(e) {
-    e.preventDefault();
+   <script>
+  window.USER_ID = {{ request.user.id }};
+  window.USER_USERNAME = "{{ request.user.username }}";
+// Global variables for URLs & Auth state
+window.NOTIF_URL = "{% url 'get_notifications' %}";
+window.MARK_NOTIF_URL = "{% url 'mark_notifications_read' %}";
+window.LOGIN_URL = "{% url 'login' %}";
+window.IS_AUTHENTICATED = "{{ request.user.is_authenticated|yesno:'true,false' }}";
 
-    let formData = new FormData(this);
-    let button = this.querySelector("button"); // Send Now button টা ধরলাম
+</script>
 
-    fetch("{% url 'save_contact' %}", {
-        method: "POST",
-        body: formData,
-        headers: {
-            "X-Requested-With": "XMLHttpRequest"
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        let msg = document.getElementById("formMessage");
-        if (data.success) {
-            msg.style.color = "green";
-            msg.innerText = data.message;
-            this.reset();
-
-            // Button effect (success)
-            button.innerText = "Sended ";
-            button.style.backgroundColor = "green";
-
-            setTimeout(() => {
-                button.innerText = "Send Now";
-                button.style.backgroundColor = "";
-            }, 2000);
-
-        } else {
-            msg.style.color = "red";
-            msg.innerText = data.message;
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-    });
-});
-
-     </script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

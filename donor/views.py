@@ -6,8 +6,120 @@ from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-
+from django.views.decorators.http import require_GET, require_POST
+from django.db import models
+from datetime import timedelta
+from django.utils import timezone
 import random
+
+# --- তোমার সব models একসাথে import করা হলো ---
+from .models import (
+    Profile,
+    RequestPost,
+    DonationRequest,
+    Comment,
+    Hero,
+    ContactMessage,
+    ChatMessage,
+    Notification,
+)
+
+# =========================
+# Chat System
+# =========================
+@login_required
+def poll_messages(request, user_id):
+    other = get_object_or_404(User, id=user_id)
+
+    last_id = int(request.GET.get("last_id", 0))
+    new_msgs = ChatMessage.objects.filter(
+        sender=other,
+        receiver=request.user,
+        id__gt=last_id
+    ).order_by("created_at")
+
+    data = [
+        {
+            "id": m.id,
+            "sender_id": m.sender.id,
+            "sender_username": m.sender.username,   # 🔥 Added
+            "receiver_id": m.receiver.id,
+            "receiver_username": m.receiver.username,  # 🔥 Added
+            "message": m.message,
+            "created_at": m.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        for m in new_msgs
+    ]
+
+    new_msgs.update(is_read=True)
+    return JsonResponse({"messages": data})
+
+
+@login_required
+@require_POST
+def send_message(request, user_id):
+    receiver = get_object_or_404(User, id=user_id)
+    msg = request.POST.get("message")
+
+    if msg and msg.strip():
+        m = ChatMessage.objects.create(
+            sender=request.user,
+            receiver=receiver,
+            message=msg.strip()
+        )
+        return JsonResponse({
+            "id": m.id,
+            "sender_id": m.sender.id,
+            "sender_username": m.sender.username,   # 🔥 Added
+            "receiver_id": m.receiver.id,
+            "receiver_username": m.receiver.username,  # 🔥 Added
+            "message": m.message,
+            "created_at": m.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        })
+    return JsonResponse({"error": "Empty message"}, status=400)
+@login_required
+@require_GET
+def chat_users(request):
+    users = User.objects.exclude(id=request.user.id)
+    data = []
+    for u in users:
+        profile = getattr(u, "profile", None)
+        profile_pic = profile.profile_pic.url if profile and profile.profile_pic else "/static/img/default-avatar.png"
+        data.append({
+            "id": u.id,
+            "username": u.username,
+            "profile_pic": profile_pic,   # 🔥 Added
+        })
+    return JsonResponse({"users": data})
+
+@login_required
+@require_GET
+def chat_history(request, user_id):
+    other = get_object_or_404(User, id=user_id)
+    msgs = ChatMessage.objects.filter(
+        models.Q(sender=request.user, receiver=other) |
+        models.Q(sender=other, receiver=request.user)
+    ).order_by("created_at")
+
+    data = [
+        {
+            "id": m.id,
+            "sender_id": m.sender.id,
+            "sender_username": m.sender.username,   # 🔥 Added
+            "receiver_id": m.receiver.id,
+            "receiver_username": m.receiver.username,  # 🔥 Added
+            "message": m.message,
+            "created_at": m.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        for m in msgs
+    ]
+
+    ChatMessage.objects.filter(sender=other, receiver=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({"messages": data})
+
+def chat_view(request):
+    users = User.objects.exclude(id=request.user.id)
+    return render(request, "chat/chat.html", {"users": users})
 
 from .models import (
     Profile,
@@ -31,6 +143,26 @@ verification_codes = {}
 def donate_now(request, post_id):
     post = get_object_or_404(RequestPost, id=post_id)
 
+    # শুধু Donor role check
+    if request.user.profile.role != "donor":
+        messages.error(request, "Only donors can donate.")
+        return redirect("pluse")
+
+    # Donor এর শেষ approved donation বের করা
+    last_approved = DonationRequest.objects.filter(
+        donor=request.user, status="approved"
+    ).order_by("-created_at").first()
+
+    if last_approved:
+        next_available_date = last_approved.created_at + timedelta(days=90)
+        if timezone.now() < next_available_date:
+            remaining_days = (next_available_date - timezone.now()).days
+            return render(
+                request,
+                "donor/cannot_donate.html",
+                {"remaining_days": remaining_days}
+            )
+
     if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
@@ -45,11 +177,18 @@ def donate_now(request, post_id):
             phone=phone,
             last_donation_date=last_date if last_date else None,
         )
+
+        # 🔔 Receiver (post owner) এর জন্য notification তৈরি করো
+        from .models import Notification
+        Notification.objects.create(
+            user=post.user,  # Post owner = Receiver
+            message=f"{request.user.username} sent a donation request for your post ({post.blood_group}, {post.location})",
+            link=f"/receiver_dashboard/"  # চাইলে নির্দিষ্ট donation request এ link করতে পারো
+        )
+
         return redirect("donation_pending", donation.id)
 
     return render(request, "donor/donate_form.html", {"post": post})
-
-
 @login_required(login_url="login")
 def donation_pending(request, donation_id):
     donation = get_object_or_404(DonationRequest, id=donation_id, donor=request.user)
@@ -316,7 +455,8 @@ def receiver_dashboard(request):
         location = request.POST.get("location")
 
         if name and problem and blood_group and location:
-            RequestPost.objects.create(
+            # নতুন request তৈরি
+            post = RequestPost.objects.create(
                 user=request.user,
                 name=name,
                 problem=problem,
@@ -324,7 +464,22 @@ def receiver_dashboard(request):
                 location=location,
                 post_type="receiver",
             )
-            return redirect("receiver_dashboard")
+
+            # =========================
+            # 🔔 সব donor কে notification পাঠাও
+            # =========================
+            from .models import Profile, Notification
+
+            donors = Profile.objects.filter(role="donor")
+            for donor in donors:
+                Notification.objects.create(
+                    user=donor.user,
+                    message=f"{request.user.username} requested {blood_group} blood at {location}",
+                    link="/pluse/"  # সব donor কে Pulse feed এ পাঠানো হবে
+                )
+
+            messages.success(request, "Blood request posted successfully!")
+            return redirect("pluse")
 
     return render(
         request,
@@ -398,3 +553,29 @@ def save_contact(request):
         return JsonResponse({"success": True, "message": "Your message has been sent!"})
 
     return JsonResponse({"success": False, "message": "Invalid request"})
+@login_required(login_url="login")
+def get_notifications(request):
+    notifications = request.user.notifications.order_by("-created_at")[:20]
+    data = [
+        {
+            "message": n.message,
+            "link": n.link,
+            "created_at": n.created_at.strftime("%b %d, %Y %H:%M"),
+            "is_read": n.is_read,
+        }
+        for n in notifications
+    ]
+    unread_count = request.user.notifications.filter(is_read=False).count()
+    return JsonResponse({"notifications": data, "count": unread_count})
+
+@login_required(login_url="login")
+def mark_notifications_read(request):
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    return JsonResponse({"status": "ok"})
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def unread_count(request):
+    count = request.user.received_messages.filter(is_read=False).count()
+    return JsonResponse({"unread_count": count})

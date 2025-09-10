@@ -1,5 +1,26 @@
 from django.db import models
 from django.contrib.auth.models import User
+class ChatMessage(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_messages")
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("created_at",)
+
+    def __str__(self):
+        return f"{self.sender.username} -> {self.receiver.username}: {self.message[:30]}"
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    message = models.CharField(max_length=255)
+    link = models.CharField(max_length=255, blank=True, null=True)  # e.g., request post link
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.message}"
 
 
 # =====================
@@ -16,7 +37,7 @@ class RequestPost(models.Model):
     POST_TYPE_CHOICES = [
         ('receiver', 'Receiver'),
         ('donor', 'Donor'),
-        ('donated', 'Donated'),   # extra state for approved donation
+        ('donated', 'Donated'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -87,6 +108,7 @@ class Profile(models.Model):
     blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     profile_pic = models.ImageField(upload_to="profile_pics/", default="default.jpg")
+    last_donation_date = models.DateField(null=True, blank=True)  # <-- Added field
 
     def __str__(self):
         return self.user.username
@@ -106,7 +128,7 @@ class ContactMessage(models.Model):
 
 
 # =====================
-# Hero Model (for homepage section)
+# Hero Model
 # =====================
 class Hero(models.Model):
     name = models.CharField(max_length=200)

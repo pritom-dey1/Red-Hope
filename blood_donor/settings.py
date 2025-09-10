@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -68,10 +68,16 @@ TEMPLATES = [
         },
     },
 ]
+ASGI_APPLICATION = 'blood_donor.asgi.application'
+
 
 WSGI_APPLICATION = 'blood_donor.wsgi.application'
 
-
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
@@ -117,10 +123,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+# 👇 এইটা যোগ কর collectstatic কাজ করার জন্য
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# (Optional) যদি development এ extra static dir থাকে
+STATICFILES_DIRS = [
+    BASE_DIR / 'donor' / 'static',
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
