@@ -11,6 +11,20 @@ from django.db import models
 from datetime import timedelta
 from django.utils import timezone
 import random
+from .models import Donor
+
+def donor_list(request):
+    donors = Donor.objects.filter(available=True)
+    data = [
+        {
+            "name": donor.user.username,
+            "blood_group": donor.blood_group,
+            "lat": donor.latitude,
+            "lng": donor.longitude,
+        }
+        for donor in donors
+    ]
+    return JsonResponse({"donors": data})
 
 # --- তোমার সব models একসাথে import করা হলো ---
 from .models import (

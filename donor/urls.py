@@ -25,7 +25,7 @@ path("chat/unread_count/", views.unread_count, name="unread_count"),
     # 📄 Static pages
     path("about/", views.about, name="about"),
     path("logout/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
-
+path("donors-json/", views.donor_list, name="donors_json"),
     # 👤 Auth & Profile
     path("register/", views.register, name="register"),  
     path('verify/<str:username>/', views.verify, name='verify'),

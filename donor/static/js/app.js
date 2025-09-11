@@ -416,3 +416,106 @@ document.addEventListener("DOMContentLoaded", updateUnreadBadge);
 
 // also call periodically, e.g., every 5 sec
 setInterval(updateUnreadBadge, 5000);
+
+
+// Map button & modal toggle
+// Map button & modal toggle
+const mapBtn = document.getElementById("map-btn");
+const mapModal = document.getElementById("map-modal");
+const mapClose = document.getElementById("map-close");
+
+mapBtn.addEventListener("click", () => {
+  mapModal.style.display = "block";
+  initLeafletMap(); // Leaflet map load
+});
+
+mapClose.addEventListener("click", () => {
+  mapModal.style.display = "none";
+});
+
+// ==========================
+// Leaflet Map Function
+// ==========================
+let leafletMap;
+
+function initLeafletMap() {
+  if (!leafletMap) {
+    leafletMap = L.map("map-container").setView([23.8103, 90.4125], 11);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(leafletMap);
+  }
+
+  // Custom Icons
+  const receiverIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/3177/3177361.png",
+    iconSize: [35, 35],
+    iconAnchor: [17, 34],
+    popupAnchor: [0, -30]
+  });
+
+  const donorIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+    iconSize: [35, 35],
+    iconAnchor: [17, 34],
+    popupAnchor: [0, -30]
+  });
+
+  // Receiver location
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const userLat = pos.coords.latitude;
+      const userLng = pos.coords.longitude;
+
+      leafletMap.setView([userLat, userLng], 13);
+
+      // Receiver marker
+      L.marker([userLat, userLng], { icon: receiverIcon })
+        .addTo(leafletMap)
+        .bindPopup("<b>You are here</b>")
+        .openPopup();
+
+      // Donors load from backend
+      fetch("/donor/donors-json/")
+        .then((res) => res.json())
+        .then((data) => {
+          data.donors.forEach((donor) => {
+            L.marker([donor.lat, donor.lng], { icon: donorIcon })
+              .addTo(leafletMap)
+              .bindPopup(
+                `<b>${donor.name}</b><br>Blood Group: ${donor.blood_group}`
+              );
+          });
+        });
+    });
+  }
+}
+// --------------------------
+// Mobile Hamburger Menu Toggle
+// --------------------------
+const hamburger = document.querySelector(".hamburger");
+const mobileMenu = document.getElementById("mobileMenu");
+const closeBtn = document.querySelector(".close-btn");
+
+if (hamburger && mobileMenu) {
+  hamburger.addEventListener("click", () => {
+    mobileMenu.style.width = "70%"; // open
+  });
+}
+
+if (closeBtn && mobileMenu) {
+  closeBtn.addEventListener("click", () => {
+    mobileMenu.style.width = "0"; // close
+  });
+}
+
+
+  gsap.to(".loader",{
+    y:-1000,
+    duration:1,
+    delay: 2,
+    ease: "power1.inOut",
+
+  })

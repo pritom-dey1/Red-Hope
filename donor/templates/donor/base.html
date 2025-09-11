@@ -8,57 +8,125 @@
     
     <!-- Page Title -->
     <title>{% block title %}{% endblock title %} | RED HOPE</title>
-    
+    <!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <!-- External Stylesheets -->
      <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
+    <!-- loader  -->
+     <div class="loader">
+        <svg width="100px" height="250px" viewPort="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+
+  <ellipse cx="50" cy="200" rx="50" ry="25"class="pool"/>
+  
+  <ellipse cx="50" cy="200" rx="12" ry="6"class="drop_shadow"/>
+  
+<!-- lets be real, I got the tear drop shape from http://stackoverflow.com/questions/30711203/how-do-i-create-a-teardrop-in-html and modified it -->
+   <path class="drop"
+        d="M50 0
+           Q51.5 6.8 60 18
+           A12.8 12.8 0 1 1 40 18
+           Q48.5 6.8 50 3z" />
+  <defs>
+    <linearGradient id="blood_red">
+      <stop offset="10%" stop-color="#ff3131" />
+      <stop offset="90%" stop-color="#7f0000" />
+    </linearGradient>
+  </defs>
+ 
+</svg>
+     </div>
     <!-- ============================= -->
     <!-- HEADER & NAVIGATION SECTION -->
     <!-- ============================= -->
-    <header>
-        <nav>
-            <!-- Website Logo -->
-            <div class="logo">
-                <img src="{% static 'img/logo.webp' %}" alt="Red Hope Logo">
-            </div>
+<header>
+    <nav class="navbar">
+        <!-- Website Logo -->
+        <div class="logo">
+           <a href="{% url 'home' %}"> <img src="{% static 'img/logo.webp' %}" alt="Red Hope Logo"></a>
+        </div>
 
-            <!-- Navigation Links -->
-            <div class="links">
-                <a href="{% url 'home' %}">HOME</a>
-                <a href="{% url 'about'%}">ABOUT</a>
-                <a href="{% url 'pluse' %}">PULSE</a>
-                <a href="{% url 'heroes'%}">OUR HEROES</a>
-            </div>
+        <!-- Navigation Links -->
+        <div class="links">
+            <a href="{% url 'home' %}">HOME</a>
+            <a href="{% url 'about'%}">ABOUT</a>
+            <a href="{% url 'pluse' %}">PULSE</a>
+            <a href="{% url 'heroes'%}">OUR HEROES</a>
+        </div>
 
-            <!-- Login Button -->
-<div class="button">
-    {% if user.is_authenticated and user.profile %}
-        {% if request.resolver_match.url_name == user.profile.role|add:"_dashboard" %}
-            <!-- যদি user dashboard এ থাকে -->
-            <form action="{% url 'logout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn">LOG OUT</button>
-            </form>
+        <!-- Login Button -->
+        <div class="button">
+            {% if user.is_authenticated and user.profile %}
+                {% if request.resolver_match.url_name == user.profile.role|add:"_dashboard" %}
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn">LOG OUT</button>
+                    </form>
+                {% else %}
+                    <a href="{% url user.profile.role|add:'_dashboard' %}">
+                        <button class="btn">DASHBOARD</button>
+                    </a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'login' %}">
+                    <button class="btn">LOG IN</button>
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Hamburger Menu (for mobile) -->
+        <div class="hamburger" >
+            <i  class="ri-menu-3-fill"></i>
+        </div>
+    </nav>
+
+    <!-- Mobile Sidebar Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <span class="close-btn" >×</span>
+          <img src="{% static 'img/logo.webp' %}" alt="Red Hope Logo">
+        <a href="{% url 'home' %}">HOME</a>
+        <a href="{% url 'about'%}">ABOUT</a>
+        <a href="{% url 'pluse' %}">PULSE</a>
+        <a href="{% url 'heroes'%}">OUR HEROES</a>
+
+        {% if user.is_authenticated and user.profile %}
+            {% if request.resolver_match.url_name == user.profile.role|add:"_dashboard" %}
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn">LOG OUT</button>
+                </form>
+            {% else %}
+                <a href="{% url user.profile.role|add:'_dashboard' %}">
+                    <button class="btn">DASHBOARD</button>
+                </a>
+            {% endif %}
         {% else %}
-            <a href="{% url user.profile.role|add:'_dashboard' %}">
-                <button class="btn">DASHBOARD</button>
+            <a href="{% url 'login' %}">
+                <button class="btn">LOG IN</button>
             </a>
         {% endif %}
-    {% else %}
-        <a href="{% url 'login' %}">
-            <button class="btn">LOG IN</button>
-        </a>
-    {% endif %}
-</div>
-        </nav>
-    </header>
+    </div>
+</header>
 
     <!-- ============================= -->
     <!-- MAIN CONTENT SECTION -->
     <!-- ============================= -->
+     <!-- Map Button (fixed) -->
+<div id="map-btn">
+  <i class="ri-map-pin-2-fill" style="font-size:25px;"></i>
+</div>
+
+<!-- Map Modal -->
+<div id="map-modal">
+  <div id="map-header">
+    <h4>Nearest Donors</h4>
+    <button id="map-close" style="width: 20px;">&times;</button>
+  </div>
+  <div id="map-container"></div>
+</div>
 <div id="notification-btn">
     <i class="ri-notification-3-fill" style="font-size: 24px;"></i>
     <span id="notif-count" 
@@ -180,6 +248,8 @@ window.IS_AUTHENTICATED = "{{ request.user.is_authenticated|yesno:'true,false' }
     <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
     
     <!-- Custom JS File -->
+   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
     <script type="module" src="{% static 'js/app.js' %}"></script> 
 </body>
 </html>

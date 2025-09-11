@@ -69,7 +69,7 @@
       <h3 style="color: red;">{{ post.name }} ({{ post.blood_group }})</h3>
       <p><strong style="color: red;">Problem:</strong> {{ post.problem }}</p>
       <p><strong style="color: red;">Location:</strong> {{ post.location }}</p>
-
+ <div class="btn_com">
 {% if post.post_type == "donated" %}
     <button class="btn" style="background: gray;">Donated ✅</button>
 {% elif user.is_authenticated and post.id in user_requests %}
@@ -82,7 +82,9 @@
 
 
       <!-- Comment toggle button -->
-      <button class="btn toggle-comments" data-post-id="{{ post.id }}">COMMENT</button>
+     
+          <button class="btn toggle-comments" data-post-id="{{ post.id }}">COMMENT</button>
+      </div>
 
       <!-- Comment Section (Initially hidden) -->
       <div class="comments-section" id="comments-{{ post.id }}" style="display:none; margin-top:10px;">

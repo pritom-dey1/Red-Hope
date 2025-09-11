@@ -138,3 +138,12 @@ class Hero(models.Model):
 
     def __str__(self):
         return self.name
+class Donor(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    blood_group = models.CharField(max_length=5)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    available = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.blood_group}"
