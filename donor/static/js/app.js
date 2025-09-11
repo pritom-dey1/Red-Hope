@@ -1,14 +1,13 @@
 // ==========================
 // app.cleaned.js — Full JS (Cleaned, WebSocket removed)
 // Preserves: GSAP/Locomotive, FAQ toggle, Notifications, Contact form,
-// Chat modal (AJAX polling), user list, contact save, and other features.
-// WebSocket-related code REMOVED to stop `WebSocket not connected` errors.
+// Chat modal (AJAX polling), user list, contact save, Map, Loader, etc.
 // ==========================
 
 document.addEventListener("DOMContentLoaded", function () {
-  // --------------------------
+  // ==========================
   // GSAP + Locomotive Scroll Setup
-  // --------------------------
+  // ==========================
   try {
     gsap.registerPlugin(ScrollTrigger);
 
@@ -35,7 +34,9 @@ document.addEventListener("DOMContentLoaded", function () {
             height: window.innerHeight,
           };
         },
-        pinType: document.querySelector(".main").style.transform ? "transform" : "fixed",
+        pinType: document.querySelector(".main").style.transform
+          ? "transform"
+          : "fixed",
       });
 
       ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
@@ -52,7 +53,6 @@ document.addEventListener("DOMContentLoaded", function () {
         y: 100,
         duration: 0.6,
         ease: "power1.inOut",
-        delay: 2.2,
         opacity: 0,
       });
     }
@@ -60,9 +60,9 @@ document.addEventListener("DOMContentLoaded", function () {
     console.warn("GSAP/Locomotive init error:", err);
   }
 
-  // --------------------------
+  // ==========================
   // FAQ Toggle
-  // --------------------------
+  // ==========================
   (function initFaq() {
     try {
       const openId = localStorage.getItem("openFaqId");
@@ -89,9 +89,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   })();
 
-  // --------------------------
+  // ==========================
   // Notification System
-  // --------------------------
+  // ==========================
   (function initNotifications() {
     const notifBtn = document.getElementById("notification-btn");
     const notifModal = document.getElementById("notification-modal");
@@ -139,9 +139,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 div.className = `notif-item ${n.is_read ? "" : "unread-notif"}`;
                 div.style.paddingLeft = "10px";
                 div.style.borderBottom = "1px solid #ddd";
-                div.innerHTML = `<p style='color:#fff; '>${n.message}</p><small style='color:#fff;'>${n.created_at}</small><br>${
-                  n.link ? `<a style='color:red; font-family:poppins;' href='${n.link}'>View</a>` : ""
-                }`;
+                div.innerHTML = `
+                  <p style='color:#fff;'>${n.message}</p>
+                  <small style='color:#fff;'>${n.created_at}</small><br>
+                  ${n.link ? `<a style='color:red; font-family:poppins;' href='${n.link}'>View</a>` : ""}
+                `;
                 notifList.appendChild(div);
               });
             }
@@ -157,9 +159,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   })();
 
-  // --------------------------
+  // ==========================
   // Contact Form Submit (AJAX)
-  // --------------------------
+  // ==========================
   (function initContactForm() {
     const contactForm = document.getElementById("contactForm");
     if (!contactForm) return;
@@ -202,9 +204,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   })();
 
-  // --------------------------
+  // ==========================
   // Chat System (AJAX Polling)
-  // --------------------------
+  // ==========================
   (function initChatSystem() {
     const chatBtn = document.getElementById("chat-btn");
     const chatModal = document.getElementById("chat-modal");
@@ -222,6 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let pollInterval = null;
     const POLL_MS = 3000;
 
+    // ----- Load Users -----
     function loadUsers() {
       fetch("/chat/users/")
         .then((res) => res.json())
@@ -241,9 +244,11 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch((err) => console.error("Load users error:", err));
     }
 
+    // ----- Open Chat -----
     function openChat(userId, username) {
       activeChatUserId = userId;
       lastMessageId = 0;
+
       if (chatHeader) chatHeader.textContent = username ? `Chat with ${username}` : "Chat";
       if (chatHistoryEl) chatHistoryEl.innerHTML = "<p style='opacity:.6'>Loading...</p>";
 
@@ -277,42 +282,47 @@ document.addEventListener("DOMContentLoaded", function () {
       }, POLL_MS);
     }
 
-function renderMessage(m) {
-  if (!chatHistoryEl) return;
-  const div = document.createElement("div");
-  div.classList.add("chat-message");
+    // ----- Render Message -----
+    function renderMessage(m) {
+      if (!chatHistoryEl) return;
+      const div = document.createElement("div");
+      div.classList.add("chat-message");
 
-  const isMine = Number(m.sender_id) === Number(window.USER_ID);
+      const isMine = Number(m.sender_id) === Number(window.USER_ID);
 
-  if (isMine) {
-    div.classList.add("chat-my-message");
-    div.innerHTML = `
-      <div class="bubble my-bubble">
-        <span class="sender">You</span>
-        <p>${escapeHtml(m.message)}</p>
-      </div>
-    `;
-  } else {
-    div.classList.add("chat-other-message");
-    div.innerHTML = `
-      <div class="bubble other-bubble">
-        <span class="sender">${m.sender_username || "Unknown"}</span>
-        <p>${escapeHtml(m.message)}</p>
-      </div>
-    `;
-  }
+      if (isMine) {
+        div.classList.add("chat-my-message");
+        div.innerHTML = `
+          <div class="bubble my-bubble">
+            <span class="sender">You</span>
+            <p>${escapeHtml(m.message)}</p>
+          </div>
+        `;
+      } else {
+        div.classList.add("chat-other-message");
+        div.innerHTML = `
+          <div class="bubble other-bubble">
+            <span class="sender">${m.sender_username || "Unknown"}</span>
+            <p>${escapeHtml(m.message)}</p>
+          </div>
+        `;
+      }
 
-  chatHistoryEl.appendChild(div);
-}
+      chatHistoryEl.appendChild(div);
+    }
+
+    // ----- Scroll Chat -----
     function scrollChatToBottom() {
       if (!chatHistoryEl) return;
       chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
     }
 
+    // ----- Send Message -----
     if (chatForm) {
       chatForm.addEventListener("submit", function (e) {
         e.preventDefault();
         if (!activeChatUserId) return alert("Select a user first.");
+
         const msg = chatInput ? chatInput.value.trim() : "";
         if (!msg) return;
 
@@ -322,39 +332,47 @@ function renderMessage(m) {
         fetch(`/chat/send/${activeChatUserId}/`, {
           method: "POST",
           body: formData,
-          headers: {"X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value}
+          headers: { "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value },
         })
-        .then(res => {
-          if (!res.ok) {
-            return res.json().then(err => { throw err });
-          }
-          return res.json();
-        })
-        .then(m => {
-          renderMessage(m);
-          lastMessageId = m.id;
-          if (chatInput) chatInput.value = "";
-          scrollChatToBottom();
-        })
-        .catch(err => {
-          alert(err.error || "Failed to send message. Try again.");
-        });
+          .then((res) => {
+            if (!res.ok) {
+              return res.json().then((err) => {
+                throw err;
+              });
+            }
+            return res.json();
+          })
+          .then((m) => {
+            renderMessage(m);
+            lastMessageId = m.id;
+            if (chatInput) chatInput.value = "";
+            scrollChatToBottom();
+          })
+          .catch((err) => {
+            alert(err.error || "Failed to send message. Try again.");
+          });
       });
     }
 
+    // ----- Toggle Chat Modal -----
     chatBtn.addEventListener("click", function () {
       chatModal.style.display = chatModal.style.display === "block" ? "none" : "block";
       if (chatModal.style.display === "block") {
         loadUsers();
       } else {
-        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+        if (pollInterval) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+        }
       }
     });
 
+    // ----- Select User -----
     window.selectUser = function (user) {
       openChat(user.id, user.username);
     };
 
+    // ----- Escape HTML -----
     function escapeHtml(unsafe) {
       return unsafe
         .replaceAll("&", "&amp;")
@@ -363,11 +381,14 @@ function renderMessage(m) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
     }
+
+    // expose openChat globally
+    window.openChat = openChat;
   })();
-window.openChat = openChat;
-  // --------------------------
-  // User List Loader
-  // --------------------------
+
+  // ==========================
+  // User List Loader (On Page Load)
+  // ==========================
   (function initUserListOnLoad() {
     try {
       if (document.getElementById("user-list")) {
@@ -382,7 +403,7 @@ window.openChat = openChat;
               li.textContent = u.username;
               li.style.cursor = "pointer";
               li.dataset.userid = u.id;
-              li.onclick = () => window.selectUser ? window.selectUser(u) : null;
+              li.onclick = () => (window.selectUser ? window.selectUser(u) : null);
               userList.appendChild(li);
             });
           })
@@ -394,10 +415,13 @@ window.openChat = openChat;
   })();
 });
 
+// ==========================
+// Chat Unread Badge Updater
+// ==========================
 function updateUnreadBadge() {
   fetch("/chat/unread_count/")
-    .then(res => res.json())
-    .then(data => {
+    .then((res) => res.json())
+    .then((data) => {
       const count = data.unread_count || 0;
       const badge = document.getElementById("chat-unread");
       if (!badge) return;
@@ -408,25 +432,22 @@ function updateUnreadBadge() {
         badge.style.display = "none";
       }
     })
-    .catch(err => console.error("Error loading unread count:", err));
+    .catch((err) => console.error("Error loading unread count:", err));
 }
 
-// call on page load
 document.addEventListener("DOMContentLoaded", updateUnreadBadge);
-
-// also call periodically, e.g., every 5 sec
 setInterval(updateUnreadBadge, 5000);
 
-
-// Map button & modal toggle
-// Map button & modal toggle
+// ==========================
+// Map Button & Modal Toggle
+// ==========================
 const mapBtn = document.getElementById("map-btn");
 const mapModal = document.getElementById("map-modal");
 const mapClose = document.getElementById("map-close");
 
 mapBtn.addEventListener("click", () => {
   mapModal.style.display = "block";
-  initLeafletMap(); // Leaflet map load
+  initLeafletMap(); // load map
 });
 
 mapClose.addEventListener("click", () => {
@@ -443,8 +464,7 @@ function initLeafletMap() {
     leafletMap = L.map("map-container").setView([23.8103, 90.4125], 11);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(leafletMap);
   }
 
@@ -453,14 +473,14 @@ function initLeafletMap() {
     iconUrl: "https://cdn-icons-png.flaticon.com/512/3177/3177361.png",
     iconSize: [35, 35],
     iconAnchor: [17, 34],
-    popupAnchor: [0, -30]
+    popupAnchor: [0, -30],
   });
 
   const donorIcon = L.icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
     iconSize: [35, 35],
     iconAnchor: [17, 34],
-    popupAnchor: [0, -30]
+    popupAnchor: [0, -30],
   });
 
   // Receiver location
@@ -477,24 +497,23 @@ function initLeafletMap() {
         .bindPopup("<b>You are here</b>")
         .openPopup();
 
-      // Donors load from backend
+      // Donors from backend
       fetch("/donor/donors-json/")
         .then((res) => res.json())
         .then((data) => {
           data.donors.forEach((donor) => {
             L.marker([donor.lat, donor.lng], { icon: donorIcon })
               .addTo(leafletMap)
-              .bindPopup(
-                `<b>${donor.name}</b><br>Blood Group: ${donor.blood_group}`
-              );
+              .bindPopup(`<b>${donor.name}</b><br>Blood Group: ${donor.blood_group}`);
           });
         });
     });
   }
 }
-// --------------------------
+
+// ==========================
 // Mobile Hamburger Menu Toggle
-// --------------------------
+// ==========================
 const hamburger = document.querySelector(".hamburger");
 const mobileMenu = document.getElementById("mobileMenu");
 const closeBtn = document.querySelector(".close-btn");
@@ -510,12 +529,3 @@ if (closeBtn && mobileMenu) {
     mobileMenu.style.width = "0"; // close
   });
 }
-
-
-  gsap.to(".loader",{
-    y:-1000,
-    duration:1,
-    delay: 2,
-    ease: "power1.inOut",
-
-  })

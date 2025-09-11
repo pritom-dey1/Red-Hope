@@ -2,63 +2,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Basic Meta Tags -->
+    <!-- ============================= -->
+    <!-- BASIC META & PAGE SETTINGS -->
+    <!-- ============================= -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Page Title -->
     <title>{% block title %}{% endblock title %} | RED HOPE</title>
+
+    <!-- ============================= -->
+    <!-- EXTERNAL STYLESHEETS -->
+    <!-- ============================= -->
     <!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <!-- External Stylesheets -->
-     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Remix Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <!-- Locomotive Scroll -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css">
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <!-- loader  -->
-     <div class="loader">
-        <svg width="100px" height="250px" viewPort="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
 
-  <ellipse cx="50" cy="200" rx="50" ry="25"class="pool"/>
-  
-  <ellipse cx="50" cy="200" rx="12" ry="6"class="drop_shadow"/>
-  
-<!-- lets be real, I got the tear drop shape from http://stackoverflow.com/questions/30711203/how-do-i-create-a-teardrop-in-html and modified it -->
-   <path class="drop"
-        d="M50 0
-           Q51.5 6.8 60 18
-           A12.8 12.8 0 1 1 40 18
-           Q48.5 6.8 50 3z" />
-  <defs>
-    <linearGradient id="blood_red">
-      <stop offset="10%" stop-color="#ff3131" />
-      <stop offset="90%" stop-color="#7f0000" />
-    </linearGradient>
-  </defs>
- 
-</svg>
-     </div>
-    <!-- ============================= -->
-    <!-- HEADER & NAVIGATION SECTION -->
-    <!-- ============================= -->
-<header>
-    <nav class="navbar">
-        <!-- Website Logo -->
-        <div class="logo">
-           <a href="{% url 'home' %}"> <img src="{% static 'img/logo.webp' %}" alt="Red Hope Logo"></a>
-        </div>
 
-        <!-- Navigation Links -->
-        <div class="links">
+    <!-- ============================= -->
+    <!-- HEADER & NAVIGATION -->
+    <!-- ============================= -->
+    <header>
+        <nav class="navbar">
+            <!-- Logo -->
+            <div class="logo">
+                <a href="{% url 'home' %}">
+                    <img src="{% static 'img/logo.webp' %}" alt="Red Hope Logo">
+                </a>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="links">
+                <a href="{% url 'home' %}">HOME</a>
+                <a href="{% url 'about'%}">ABOUT</a>
+                <a href="{% url 'pluse' %}">PULSE</a>
+                <a href="{% url 'heroes'%}">OUR HEROES</a>
+            </div>
+
+            <!-- Login / Dashboard Button -->
+            <div class="button">
+                {% if user.is_authenticated and user.profile %}
+                    {% if request.resolver_match.url_name == user.profile.role|add:"_dashboard" %}
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn">LOG OUT</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url user.profile.role|add:'_dashboard' %}">
+                            <button class="btn">DASHBOARD</button>
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'login' %}">
+                        <button class="btn">LOG IN</button>
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Hamburger (Mobile) -->
+            <div class="hamburger">
+                <i class="ri-menu-3-fill"></i>
+            </div>
+        </nav>
+
+        <!-- Mobile Sidebar Menu -->
+        <div id="mobileMenu" class="mobile-menu">
+            <span class="close-btn">×</span>
+            <img src="{% static 'img/logo.webp' %}" alt="Red Hope Logo">
+
             <a href="{% url 'home' %}">HOME</a>
             <a href="{% url 'about'%}">ABOUT</a>
             <a href="{% url 'pluse' %}">PULSE</a>
             <a href="{% url 'heroes'%}">OUR HEROES</a>
-        </div>
 
-        <!-- Login Button -->
-        <div class="button">
             {% if user.is_authenticated and user.profile %}
                 {% if request.resolver_match.url_name == user.profile.role|add:"_dashboard" %}
                     <form action="{% url 'logout' %}" method="post">
@@ -76,180 +97,150 @@
                 </a>
             {% endif %}
         </div>
+    </header>
 
-        <!-- Hamburger Menu (for mobile) -->
-        <div class="hamburger" >
-            <i  class="ri-menu-3-fill"></i>
+    <!-- ============================= -->
+    <!-- FIXED BUTTONS (MAP, NOTIF, CHAT) -->
+    <!-- ============================= -->
+    <!-- Map -->
+    <div id="map-btn">
+        <i class="ri-map-pin-2-fill" style="font-size:25px;"></i>
+    </div>
+    <div id="map-modal">
+        <div id="map-header">
+            <h4>Nearest Donors</h4>
+            <button id="map-close" style="width: 20px;">&times;</button>
         </div>
-    </nav>
+        <div id="map-container"></div>
+    </div>
 
-    <!-- Mobile Sidebar Menu -->
-    <div id="mobileMenu" class="mobile-menu">
-        <span class="close-btn" >×</span>
-          <img src="{% static 'img/logo.webp' %}" alt="Red Hope Logo">
-        <a href="{% url 'home' %}">HOME</a>
-        <a href="{% url 'about'%}">ABOUT</a>
-        <a href="{% url 'pluse' %}">PULSE</a>
-        <a href="{% url 'heroes'%}">OUR HEROES</a>
+    <!-- Notifications -->
+    <div id="notification-btn">
+        <i class="ri-notification-3-fill" style="font-size: 24px;"></i>
+        <span id="notif-count"
+              style="position: absolute; top: -5px; right: -5px; 
+                     background: red; color: white; font-size: 12px; 
+                     font-weight: bold; padding: 2px 6px; 
+                     border-radius: 50%; display: none;">
+        </span>
+    </div>
+    <div id="notification-modal">
+        <h4 style="font-family: poppins; color: #fff;">Notifications</h4>
+        <div id="notification-list">
+            <p>Loading...</p>
+        </div>
+    </div>
 
-        {% if user.is_authenticated and user.profile %}
-            {% if request.resolver_match.url_name == user.profile.role|add:"_dashboard" %}
-                <form action="{% url 'logout' %}" method="post">
+    <!-- Chat -->
+    <div id="chat-btn">
+        <i class="ri-chat-voice-fill" style="font-size: 25px;"></i>
+        <span id="chat-unread"
+              style="display:none; position:absolute; top:-8px; right:-8px; 
+                     background:red; color:#fff; padding:2px 6px; 
+                     border-radius:50%;">0</span>
+    </div>
+    <div id="chat-modal">
+        <div style="display:flex; height:100%;">
+            <!-- Users List -->
+            <div id="chat-users" style="border-right:1px solid #222; overflow:auto; padding:8px;">
+                <h4 style="font-size:14px; text-transform: uppercase; font-family: roboto;">Users</h4>
+                <ul id="user-list" style="list-style:none; padding:0; margin:0; text-transform: uppercase; font-family: poppins;"></ul>
+            </div>
+
+            <!-- Chat Box -->
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <div id="chat-header" style="padding:8px; border-bottom:1px solid #222; text-transform: uppercase; font-family: poppins;">
+                    Select a user
+                </div>
+                <div id="chat-history" style="flex:1; padding:8px; overflow:auto; font-family: poppins;"></div>
+                <form id="chat-form" style="display:flex; padding:8px; border-top:1px solid #222;">
                     {% csrf_token %}
-                    <button type="submit" class="btn">LOG OUT</button>
+                    <input id="chat-input" type="text" placeholder="Type message..."
+                           style="flex:1; padding:8px; border-radius:6px; border:1px solid #333; background:#0b0b0b; color:#fff;">
+                    <button type="submit" style="margin-left:8px; padding:8px 12px; border-radius: 5px; border: none;">
+                        Send
+                    </button>
                 </form>
-            {% else %}
-                <a href="{% url user.profile.role|add:'_dashboard' %}">
-                    <button class="btn">DASHBOARD</button>
-                </a>
-            {% endif %}
-        {% else %}
-            <a href="{% url 'login' %}">
-                <button class="btn">LOG IN</button>
-            </a>
-        {% endif %}
+            </div>
+        </div>
     </div>
-</header>
 
     <!-- ============================= -->
-    <!-- MAIN CONTENT SECTION -->
+    <!-- MAIN CONTENT -->
     <!-- ============================= -->
-     <!-- Map Button (fixed) -->
-<div id="map-btn">
-  <i class="ri-map-pin-2-fill" style="font-size:25px;"></i>
-</div>
-
-<!-- Map Modal -->
-<div id="map-modal">
-  <div id="map-header">
-    <h4>Nearest Donors</h4>
-    <button id="map-close" style="width: 20px;">&times;</button>
-  </div>
-  <div id="map-container"></div>
-</div>
-<div id="notification-btn">
-    <i class="ri-notification-3-fill" style="font-size: 24px;"></i>
-    <span id="notif-count" 
-          style="position: absolute; top: -5px; right: -5px; 
-                 background: red; color: white; 
-                 font-size: 12px; font-weight: bold; 
-                 padding: 2px 6px; border-radius: 50%; 
-                 display: none;">
-    </span>
-</div>
-
-<div id="notification-modal">
-    <h4 style="font-family: poppins;
-    color: #fff;">Notifications</h4>
-    <div id="notification-list">
-        <p>Loading...</p>
-    </div>
-</div>
-   <!-- chat button (fixed) -->
-<div id="chat-btn" >
-<i style="font-size: 25px;" class="ri-chat-voice-fill"></i><span id="chat-unread" style="display:none; position:absolute; top:-8px; right:-8px; background:red; color:#fff; padding:2px 6px; border-radius:50%;">0</span>
-</div>
-
-<!-- chat modal -->
-<div id="chat-modal">
-  <div style="display:flex; height:100%;">
-    <div id="chat-users" style=" border-right:1px solid #222; overflow:auto; padding:8px;">
-      <h4 style="font-size:14px; text-transform: uppercase;text-transform: uppercase; font-family: roboto;">Users</h4>
-      <ul id="user-list" style="list-style:none; padding:0; margin:0; text-transform: uppercase;font-family: poppins;"></ul>
-    </div>
-    <div style="flex:1; display:flex; flex-direction:column;">
-      <div id="chat-header" style="padding:8px; border-bottom:1px solid #222; text-transform: uppercase; font-family: poppins;">Select a user</div>
-      <div id="chat-history" style="flex:1; padding:8px; overflow:auto; font-family: poppins;"></div>
-      <form id="chat-form" style="display:flex; padding:8px; border-top:1px solid #222;">
-        {% csrf_token %}
-        <input id="chat-input" type="text" placeholder="Type message..." style="flex:1; padding:8px; border-radius:6px; border:1px solid #333; background:#0b0b0b; color:#fff;">
-        <button type="submit" style="   margin-left:8px; padding:8px 12px; border-radius: 5px; border: none;">Send</button>
-      </form>
-    </div>
-  </div>
-</div>
-
-        
     <div class="main">
-        {% block main %}
-        {% endblock main %}
-           <!-- ============================= -->
-    <!-- FOOTER SECTION -->
-    <!-- ============================= -->
-    <footer>
-        <div class="footer_warper">
+        {% block main %}{% endblock main %}
 
-            <!-- Top Footer (Contact & Form) -->
-            <div class="footer_top">
-                <div class="footer_left">
-                    <p>CONTACT US</p>
-                    <h2>
-                        LET'S BE OUR HERO — DONATE BLOOD <br>
-                        SAVE LIVES!
-                    </h2>
+        <!-- ============================= -->
+        <!-- FOOTER -->
+        <!-- ============================= -->
+        <footer>
+            <div class="footer_warper">
+
+                <!-- Top Footer -->
+                <div class="footer_top">
+                    <div class="footer_left">
+                        <p>CONTACT US</p>
+                        <h2>
+                            LET'S BE OUR HERO — DONATE BLOOD <br>
+                            SAVE LIVES!
+                        </h2>
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div class="footer_right">
+                        <form id="contactForm">
+                            {% csrf_token %}
+                            <input type="text" name="name" placeholder="Enter Your Name">
+                            <input type="email" name="email" placeholder="Enter Your Email">
+                            <textarea name="description" placeholder="Give Your Description"></textarea>
+                            <button type="submit" class="btn">Send Now</button>
+                        </form>
+                        <p id="formMessage" style="text-align:center; margin-top:10px;"></p>
+                    </div>
                 </div>
 
-                <!-- Contact Form -->
-            <div class="footer_right">
-    <form id="contactForm">
-        {% csrf_token %}
-        <input type="text" name="name" placeholder="Enter Your Name">
-        <input type="email" name="email" placeholder="Enter Your Email">
-        <textarea name="description" placeholder="Give Your Description"></textarea>
-        <button type="submit" class="btn">Send Now</button>
-    </form>
-
-    <p id="formMessage" style="text-align: center;  margin-top:10px;"></p>
-</div>
-
+                <!-- Bottom Footer -->
+                <div class="footer_bottom">
+                    <p>
+                        © 2025 Donate Blood, Save Lives. Designed and developed with ❤️ by Pritom Dey.
+                    </p>
+                </div>
             </div>
-
-            <!-- Bottom Footer -->
-            <div class="footer_bottom">
-                <p>
-                    © 2025 Donate Blood, Save Lives. Designed and developed with ❤️ by Pritom Dey.
-                </p>
-            </div>
-        </div>
-    </footer>
+        </footer>
     </div>
 
- 
+    <!-- ============================= -->
+    <!-- GLOBAL VARIABLES (JS) -->
+    <!-- ============================= -->
+    <script>
+        window.USER_ID = {{ request.user.id }};
+        window.USER_USERNAME = "{{ request.user.username }}";
+        window.NOTIF_URL = "{% url 'get_notifications' %}";
+        window.MARK_NOTIF_URL = "{% url 'mark_notifications_read' %}";
+        window.LOGIN_URL = "{% url 'login' %}";
+        window.IS_AUTHENTICATED = "{{ request.user.is_authenticated|yesno:'true,false' }}";
+        
+    </script>
 
     <!-- ============================= -->
-    <!-- JAVASCRIPT FILES & CDN LINKS -->
+    <!-- JAVASCRIPT FILES -->
     <!-- ============================= -->
-   <script>
-  window.USER_ID = {{ request.user.id }};
-  window.USER_USERNAME = "{{ request.user.username }}";
-// Global variables for URLs & Auth state
-window.NOTIF_URL = "{% url 'get_notifications' %}";
-window.MARK_NOTIF_URL = "{% url 'mark_notifications_read' %}";
-window.LOGIN_URL = "{% url 'login' %}";
-window.IS_AUTHENTICATED = "{{ request.user.is_authenticated|yesno:'true,false' }}";
-
-</script>
-
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- GSAP (for animations & scroll effects) -->
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/ScrollToPlugin.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js" 
-        integrity="sha512-P2IDYZfqSwjcSjX0BKeNhwRUH8zRPGlgcWl5n6gBLzdi4Y5/0O4zaXrtO4K9TZK6Hn1BenYpKowuCavNandERg==" 
-        crossorigin="anonymous" referrerpolicy="no-referrer">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js" 
-        integrity="sha512-NcZdtrT77bJr4STcmsGAESr06BYGE8woZdSdEgqnpyqac7sugNO+Tr4bGwGF3MsnEkGKhU2KL2xh6Ec+BqsaHA==" 
-        crossorigin="anonymous" referrerpolicy="no-referrer">
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
 
     <!-- Locomotive Scroll -->
     <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
-    
-    <!-- Custom JS File -->
-   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <script type="module" src="{% static 'js/app.js' %}"></script> 
+    <!-- Leaflet -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Custom JS -->
+    <script type="module" src="{% static 'js/app.js' %}"></script>
 </body>
 </html>

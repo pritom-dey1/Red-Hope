@@ -33,50 +33,6 @@ a {
 .btn:hover {
   background-color: #b80000;
 }
-/* .main {
-  min-height: 100%;
-  height: auto !important;
-} */
-/* ============================= */
-/* LOADER ANIMATION */
-/* ============================= */
-.pool {
-  fill: url(#blood_red);
-}
-.loader {
-  display: flex;
-  min-height: 100%;
-  width: 100%;
-  justify-content: center;
-  background-color: #222;
-  align-items: center;
-  position: absolute;
-  z-index: 9999999999999 !important;
-  flex-direction: column;
-}
-.drop {
-  width: 100%;
-  fill: url(#blood_red);
-  animation: blood_drop 2s infinite;
-}
-.drop_shadow {
-  opacity: 0.5;
-  fill: #dd0000;
-  animation: blood_drop_shadow 2s infinite;
-}
-
-@keyframes blood_drop {
-  0% { transform: scale(0.1, 0.1) translate(470px, 0px); }
-  25% { transform: scale(1.1, 1.2); }
-  95% { transform: scale(1, 1.5); }
-  100% { transform: translate(0, 170px); }
-}
-@keyframes blood_drop_shadow {
-  0% { opacity: 0; }
-  25% { opacity: 0.25; }
-  95% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
 
 /* ============================= */
 /* HEADER & NAVBAR */
