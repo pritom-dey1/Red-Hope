@@ -116,6 +116,9 @@ python manage.py runserver
 
 ---
 ```
+# Admin Password
+- Username:pritomdey
+- Password:pritom
 ## 👨‍💻 Developer
 
 - Name: Pritom Dey 
