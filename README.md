@@ -113,3 +113,18 @@ python manage.py createsuperuser
 
 # Run development server
 python manage.py runserver
+
+---
+
+## 👨‍💻 Developer
+
+- Name: Pritom Dey 
+- GitHub: [pritom-dey1](https://github.com/pritom-dey1)  
+- LinkedIn: [Pritom Dey](https://www.linkedin.com/in/pritom-dey1/)  
+- Email: pritom1.2.zx@gmail.com 
+
+---
+
+## 🚀 Live Demo
+
+🔗 [Click here to view the live demo](https://zero-boundaries-hackathon.onrender.com/)  
