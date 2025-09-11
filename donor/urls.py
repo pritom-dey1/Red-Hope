@@ -12,7 +12,7 @@ urlpatterns = [
     path("notifications/mark-read/", views.mark_notifications_read, name="mark_notifications_read"),
 
     # 🩸 Posts & Comments
-    path('pluse', views.pluse, name="pluse"),
+    path('pluse/', views.pluse, name="pluse"),
     path("comments/<int:post_id>/", views.get_comments, name="get_comments"),
     path("comments/<int:post_id>/add/", views.add_comment, name="add_comment"),
     path("chat/users/", views.chat_users, name="chat_users"),

@@ -1,8 +1,4 @@
-// ==========================
-// app.cleaned.js — Full JS (Cleaned, WebSocket removed)
-// Preserves: GSAP/Locomotive, FAQ toggle, Notifications, Contact form,
-// Chat modal (AJAX polling), user list, contact save, Map, Loader, etc.
-// ==========================
+
 
 document.addEventListener("DOMContentLoaded", function () {
   // ==========================
@@ -13,10 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const locoScrollEl = document.querySelector(".main");
     if (locoScrollEl) {
-      const locoScroll = new LocomotiveScroll({
-        el: locoScrollEl,
-        smooth: true,
-      });
+      const locoScroll = new LocomotiveScroll({ el: locoScrollEl, smooth: true });
 
       locoScroll.on("scroll", ScrollTrigger.update);
 
@@ -27,16 +20,9 @@ document.addEventListener("DOMContentLoaded", function () {
             : locoScroll.scroll.instance.scroll.y;
         },
         getBoundingClientRect() {
-          return {
-            top: 0,
-            left: 0,
-            width: window.innerWidth,
-            height: window.innerHeight,
-          };
+          return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
         },
-        pinType: document.querySelector(".main").style.transform
-          ? "transform"
-          : "fixed",
+        pinType: locoScrollEl.style.transform ? "transform" : "fixed",
       });
 
       ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
@@ -48,41 +34,50 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
-    if (document.querySelector(".hero-content")) {
-      gsap.from(".hero-content", {
-        y: 100,
-        duration: 0.6,
-        ease: "power1.inOut",
-        opacity: 0,
-      });
+    const heroContent = document.querySelector(".hero-content");
+    if (heroContent) {
+      gsap.from(heroContent, { y: 100, duration: 0.6, ease: "power1.inOut", opacity: 0 });
+      
+   
     }
   } catch (err) {
     console.warn("GSAP/Locomotive init error:", err);
   }
 
   // ==========================
-  // FAQ Toggle
+  // FAQ Toggle (Plain JS)
   // ==========================
   (function initFaq() {
     try {
       const openId = localStorage.getItem("openFaqId");
       if (openId) {
-        const $item = $(`.faq-item[data-id="${openId}"]`);
-        $item.addClass("active");
-        $item.find(".faq-answer").slideDown();
+        const item = document.querySelector(`.faq-item[data-id="${openId}"]`);
+        if (item) {
+          item.classList.add("active");
+          const answer = item.querySelector(".faq-answer");
+          if (answer) answer.style.display = "block";
+        }
       }
 
-      $(document).on("click", ".faq-question", function () {
-        const $item = $(this).closest(".faq-item");
-        $(".faq-item").not($item).removeClass("active").find(".faq-answer").slideUp();
-        $item.toggleClass("active");
-        $item.find(".faq-answer").slideToggle();
+      document.addEventListener("click", (e) => {
+        if (!e.target.matches(".faq-question")) return;
+        const item = e.target.closest(".faq-item");
+        if (!item) return;
 
-        if ($item.hasClass("active")) {
-          localStorage.setItem("openFaqId", $item.data("id"));
-        } else {
-          localStorage.removeItem("openFaqId");
-        }
+        document.querySelectorAll(".faq-item").forEach((el) => {
+          if (el !== item) {
+            el.classList.remove("active");
+            const ans = el.querySelector(".faq-answer");
+            if (ans) ans.style.display = "none";
+          }
+        });
+
+        const answer = item.querySelector(".faq-answer");
+        const isActive = item.classList.toggle("active");
+        if (answer) answer.style.display = isActive ? "block" : "none";
+
+        if (isActive) localStorage.setItem("openFaqId", item.dataset.id);
+        else localStorage.removeItem("openFaqId");
       });
     } catch (e) {
       console.warn("FAQ init error:", e);
@@ -97,27 +92,25 @@ document.addEventListener("DOMContentLoaded", function () {
     const notifModal = document.getElementById("notification-modal");
     const notifList = document.getElementById("notification-list");
     const notifCount = document.getElementById("notif-count");
-
     if (!notifBtn || !notifModal || !notifList || !notifCount) return;
 
-    function updateNotifCount() {
-      fetch(window.NOTIF_URL || "/get-notifications/")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.count > 0) {
-            notifCount.style.display = "inline-block";
-            notifCount.innerText = data.count;
-          } else {
-            notifCount.style.display = "none";
-          }
-        })
-        .catch((err) => console.error("Notif count error:", err));
+    async function updateNotifCount() {
+      try {
+        const res = await fetch(window.NOTIF_URL || "/get-notifications/");
+        const data = await res.json();
+        if (data.count > 0) {
+          notifCount.style.display = "inline-block";
+          notifCount.innerText = data.count;
+        } else notifCount.style.display = "none";
+      } catch (err) {
+        console.error("Notif count error:", err);
+      }
     }
 
     updateNotifCount();
     setInterval(updateNotifCount, 5000);
 
-    notifBtn.addEventListener("click", () => {
+    notifBtn.addEventListener("click", async () => {
       if (window.IS_AUTHENTICATED === "false") {
         window.location.href = window.LOGIN_URL;
         return;
@@ -127,34 +120,31 @@ document.addEventListener("DOMContentLoaded", function () {
       notifModal.style.display = isVisible ? "none" : "block";
 
       if (!isVisible) {
-        fetch(window.NOTIF_URL || "/get-notifications/")
-          .then((res) => res.json())
-          .then((data) => {
-            notifList.innerHTML = "";
-            if (!data.notifications || data.notifications.length === 0) {
-              notifList.innerHTML = "<p>You don't have any notification.</p>";
-            } else {
-              data.notifications.forEach((n) => {
-                const div = document.createElement("div");
-                div.className = `notif-item ${n.is_read ? "" : "unread-notif"}`;
-                div.style.paddingLeft = "10px";
-                div.style.borderBottom = "1px solid #ddd";
-                div.innerHTML = `
-                  <p style='color:#fff;'>${n.message}</p>
-                  <small style='color:#fff;'>${n.created_at}</small><br>
-                  ${n.link ? `<a style='color:red; font-family:poppins;' href='${n.link}'>View</a>` : ""}
-                `;
-                notifList.appendChild(div);
-              });
-            }
-
-            fetch(window.MARK_NOTIF_URL || "/mark-notifications-read/")
-              .then(() => {
-                notifCount.style.display = "none";
-              })
-              .catch((err) => console.error("Mark notif read error:", err));
-          })
-          .catch((err) => console.error("Fetch notifications error:", err));
+        try {
+          const res = await fetch(window.NOTIF_URL || "/get-notifications/");
+          const data = await res.json();
+          notifList.innerHTML = "";
+          if (!data.notifications || data.notifications.length === 0) {
+            notifList.innerHTML = "<p>You don't have any notification.</p>";
+          } else {
+            data.notifications.forEach((n) => {
+              const div = document.createElement("div");
+              div.className = `notif-item ${n.is_read ? "" : "unread-notif"}`;
+              div.style.paddingLeft = "10px";
+              div.style.borderBottom = "1px solid #ddd";
+              div.innerHTML = `
+                <p style='color:#fff;'>${n.message}</p>
+                <small style='color:#fff;'>${n.created_at}</small><br>
+                ${n.link ? `<a style='color:red; font-family:poppins;' href='${n.link}'>View</a>` : ""}
+              `;
+              notifList.appendChild(div);
+            });
+          }
+          await fetch(window.MARK_NOTIF_URL || "/mark-notifications-read/");
+          notifCount.style.display = "none";
+        } catch (err) {
+          console.error("Fetch notifications error:", err);
+        }
       }
     });
   })();
@@ -166,41 +156,37 @@ document.addEventListener("DOMContentLoaded", function () {
     const contactForm = document.getElementById("contactForm");
     if (!contactForm) return;
 
-    contactForm.addEventListener("submit", function (e) {
+    contactForm.addEventListener("submit", async function (e) {
       e.preventDefault();
-      let formData = new FormData(this);
-      let button = this.querySelector("button");
-
-      fetch(window.location.origin + "/save-contact/", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          let msg = document.getElementById("formMessage");
-          if (data.success) {
-            msg.style.color = "green";
-            msg.innerText = data.message;
-            this.reset();
-
-            if (button) {
-              button.innerText = "Sended";
-              button.style.backgroundColor = "green";
-              setTimeout(() => {
-                button.innerText = "Send Now";
-                button.style.backgroundColor = "";
-              }, 2000);
-            }
-          } else {
-            msg.style.color = "red";
-            msg.innerText = data.message || "Error sending message";
+      const formData = new FormData(this);
+      const button = this.querySelector("button");
+      try {
+        const res = await fetch(window.location.origin + "/save-contact/", {
+          method: "POST",
+          body: formData,
+          headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value },
+        });
+        const data = await res.json();
+        const msg = document.getElementById("formMessage");
+        if (data.success) {
+          msg.style.color = "green";
+          msg.innerText = data.message;
+          this.reset();
+          if (button) {
+            button.innerText = "Sended";
+            button.style.backgroundColor = "green";
+            setTimeout(() => {
+              button.innerText = "Send Now";
+              button.style.backgroundColor = "";
+            }, 2000);
           }
-        })
-        .catch((err) => console.error("Contact send error:", err));
+        } else {
+          msg.style.color = "red";
+          msg.innerText = data.message || "Error sending message";
+        }
+      } catch (err) {
+        console.error("Contact send error:", err);
+      }
     });
   })();
 
@@ -224,218 +210,165 @@ document.addEventListener("DOMContentLoaded", function () {
     let pollInterval = null;
     const POLL_MS = 3000;
 
-    // ----- Load Users -----
-    function loadUsers() {
-      fetch("/chat/users/")
-        .then((res) => res.json())
-        .then((data) => {
-          if (!userListEl) return;
-          userListEl.innerHTML = "";
-          data.users.forEach((u) => {
-            const li = document.createElement("li");
-            li.textContent = u.username;
-            li.style.padding = "6px";
-            li.style.cursor = "pointer";
-            li.dataset.userid = u.id;
-            li.addEventListener("click", () => openChat(u.id, u.username));
-            userListEl.appendChild(li);
-          });
-        })
-        .catch((err) => console.error("Load users error:", err));
+    async function loadUsers() {
+      try {
+        const res = await fetch("/chat/users/");
+        const data = await res.json();
+        if (!userListEl) return;
+        userListEl.innerHTML = "";
+        data.users.forEach((u) => {
+          const li = document.createElement("li");
+          li.textContent = u.username;
+          li.style.cursor = "pointer";
+          li.dataset.userid = u.id;
+          li.addEventListener("click", () => openChat(u.id, u.username));
+          userListEl.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Load users error:", err);
+      }
     }
 
-    // ----- Open Chat -----
-    function openChat(userId, username) {
+    async function openChat(userId, username) {
       activeChatUserId = userId;
       lastMessageId = 0;
-
       if (chatHeader) chatHeader.textContent = username ? `Chat with ${username}` : "Chat";
       if (chatHistoryEl) chatHistoryEl.innerHTML = "<p style='opacity:.6'>Loading...</p>";
 
-      fetch(`/chat/history/${userId}/`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (!chatHistoryEl) return;
-          chatHistoryEl.innerHTML = "";
-          data.messages.forEach((m) => renderMessage(m));
-          if (data.messages.length > 0) {
-            lastMessageId = data.messages[data.messages.length - 1].id;
-          }
-          scrollChatToBottom();
-        })
-        .catch((err) => console.error("Load history error:", err));
+      try {
+        const res = await fetch(`/chat/history/${userId}/`);
+        const data = await res.json();
+        if (!chatHistoryEl) return;
+        chatHistoryEl.innerHTML = "";
+        data.messages.forEach((m) => renderMessage(m));
+        if (data.messages.length > 0) lastMessageId = data.messages[data.messages.length - 1].id;
+        scrollChatToBottom();
+      } catch (err) {
+        console.error("Load history error:", err);
+      }
 
       if (pollInterval) clearInterval(pollInterval);
-
-      pollInterval = setInterval(() => {
+      pollInterval = setInterval(async () => {
         if (!activeChatUserId) return;
-        fetch(`/chat/poll/${userId}/?last_id=${lastMessageId}`)
-          .then((res) => res.json())
-          .then((data) => {
-            data.messages.forEach((m) => {
-              renderMessage(m);
-              lastMessageId = m.id;
-            });
-            if (data.messages.length > 0) scrollChatToBottom();
-          })
-          .catch((err) => console.error("Poll messages error:", err));
+        try {
+          const res = await fetch(`/chat/poll/${userId}/?last_id=${lastMessageId}`);
+          const data = await res.json();
+          data.messages.forEach((m) => {
+            renderMessage(m);
+            lastMessageId = m.id;
+          });
+          if (data.messages.length > 0) scrollChatToBottom();
+        } catch (err) {
+          console.error("Poll messages error:", err);
+        }
       }, POLL_MS);
     }
 
-    // ----- Render Message -----
     function renderMessage(m) {
       if (!chatHistoryEl) return;
       const div = document.createElement("div");
       div.classList.add("chat-message");
-
       const isMine = Number(m.sender_id) === Number(window.USER_ID);
-
-      if (isMine) {
-        div.classList.add("chat-my-message");
-        div.innerHTML = `
-          <div class="bubble my-bubble">
-            <span class="sender">You</span>
-            <p>${escapeHtml(m.message)}</p>
-          </div>
-        `;
-      } else {
-        div.classList.add("chat-other-message");
-        div.innerHTML = `
-          <div class="bubble other-bubble">
-            <span class="sender">${m.sender_username || "Unknown"}</span>
-            <p>${escapeHtml(m.message)}</p>
-          </div>
-        `;
-      }
-
+      div.classList.add(isMine ? "chat-my-message" : "chat-other-message");
+      div.innerHTML = `
+        <div class="bubble ${isMine ? "my-bubble" : "other-bubble"}">
+          <span class="sender">${isMine ? "You" : m.sender_username || "Unknown"}</span>
+          <p>${escapeHtml(m.message)}</p>
+        </div>
+      `;
       chatHistoryEl.appendChild(div);
     }
 
-    // ----- Scroll Chat -----
     function scrollChatToBottom() {
       if (!chatHistoryEl) return;
       chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
     }
 
-    // ----- Send Message -----
     if (chatForm) {
-      chatForm.addEventListener("submit", function (e) {
+      chatForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         if (!activeChatUserId) return alert("Select a user first.");
-
-        const msg = chatInput ? chatInput.value.trim() : "";
+        const msg = chatInput.value.trim();
         if (!msg) return;
-
         const formData = new FormData();
         formData.append("message", msg);
-
-        fetch(`/chat/send/${activeChatUserId}/`, {
-          method: "POST",
-          body: formData,
-          headers: { "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value },
-        })
-          .then((res) => {
-            if (!res.ok) {
-              return res.json().then((err) => {
-                throw err;
-              });
-            }
-            return res.json();
-          })
-          .then((m) => {
-            renderMessage(m);
-            lastMessageId = m.id;
-            if (chatInput) chatInput.value = "";
-            scrollChatToBottom();
-          })
-          .catch((err) => {
-            alert(err.error || "Failed to send message. Try again.");
+        try {
+          const res = await fetch(`/chat/send/${activeChatUserId}/`, {
+            method: "POST",
+            body: formData,
+            headers: { "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value },
           });
+          const m = await res.json();
+          renderMessage(m);
+          lastMessageId = m.id;
+          chatInput.value = "";
+          scrollChatToBottom();
+        } catch (err) {
+          alert(err.error || "Failed to send message. Try again.");
+        }
       });
     }
 
-    // ----- Toggle Chat Modal -----
-    chatBtn.addEventListener("click", function () {
+    chatBtn.addEventListener("click", () => {
       chatModal.style.display = chatModal.style.display === "block" ? "none" : "block";
-      if (chatModal.style.display === "block") {
-        loadUsers();
-      } else {
-        if (pollInterval) {
-          clearInterval(pollInterval);
-          pollInterval = null;
-        }
-      }
+      if (chatModal.style.display === "block") loadUsers();
+      else if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
     });
 
-    // ----- Select User -----
-    window.selectUser = function (user) {
-      openChat(user.id, user.username);
-    };
+    window.selectUser = openChat;
 
-    // ----- Escape HTML -----
     function escapeHtml(unsafe) {
       return unsafe
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
-    // expose openChat globally
     window.openChat = openChat;
   })();
 
   // ==========================
-  // User List Loader (On Page Load)
+  // User List Loader
   // ==========================
   (function initUserListOnLoad() {
-    try {
-      if (document.getElementById("user-list")) {
-        fetch("/get-users/")
-          .then((res) => res.json())
-          .then((data) => {
-            let userList = document.getElementById("user-list");
-            if (!userList) return;
-            userList.innerHTML = "";
-            data.users.forEach((u) => {
-              let li = document.createElement("li");
-              li.textContent = u.username;
-              li.style.cursor = "pointer";
-              li.dataset.userid = u.id;
-              li.onclick = () => (window.selectUser ? window.selectUser(u) : null);
-              userList.appendChild(li);
-            });
-          })
-          .catch((err) => console.warn("get-users error:", err));
-      }
-    } catch (e) {
-      console.warn("initUserListOnLoad error:", e);
-    }
+    const userListEl = document.getElementById("user-list");
+    if (!userListEl) return;
+    fetch("/get-users/")
+      .then((res) => res.json())
+      .then((data) => {
+        userListEl.innerHTML = "";
+        data.users.forEach((u) => {
+          const li = document.createElement("li");
+          li.textContent = u.username;
+          li.style.cursor = "pointer";
+          li.dataset.userid = u.id;
+          li.onclick = () => window.selectUser?.(u);
+          userListEl.appendChild(li);
+        });
+      })
+      .catch((err) => console.warn("get-users error:", err));
   })();
 });
 
 // ==========================
 // Chat Unread Badge Updater
 // ==========================
-function updateUnreadBadge() {
-  fetch("/chat/unread_count/")
-    .then((res) => res.json())
-    .then((data) => {
-      const count = data.unread_count || 0;
-      const badge = document.getElementById("chat-unread");
-      if (!badge) return;
-      if (count > 0) {
-        badge.style.display = "inline-block";
-        badge.innerText = count;
-      } else {
-        badge.style.display = "none";
-      }
-    })
-    .catch((err) => console.error("Error loading unread count:", err));
+async function updateUnreadBadge() {
+  try {
+    const res = await fetch("/chat/unread_count/");
+    const data = await res.json();
+    const count = data.unread_count || 0;
+    const badge = document.getElementById("chat-unread");
+    if (!badge) return;
+    badge.style.display = count > 0 ? "inline-block" : "none";
+    badge.innerText = count;
+  } catch (err) {
+    console.error("Error loading unread count:", err);
+  }
 }
-
-document.addEventListener("DOMContentLoaded", updateUnreadBadge);
+updateUnreadBadge();
 setInterval(updateUnreadBadge, 5000);
 
 // ==========================
@@ -445,69 +378,39 @@ const mapBtn = document.getElementById("map-btn");
 const mapModal = document.getElementById("map-modal");
 const mapClose = document.getElementById("map-close");
 
-mapBtn.addEventListener("click", () => {
-  mapModal.style.display = "block";
-  initLeafletMap(); // load map
+if (mapBtn) mapBtn.addEventListener("click", () => {
+  if (mapModal) mapModal.style.display = "block";
+  initLeafletMap();
 });
-
-mapClose.addEventListener("click", () => {
-  mapModal.style.display = "none";
-});
+if (mapClose) mapClose.addEventListener("click", () => mapModal && (mapModal.style.display = "none"));
 
 // ==========================
 // Leaflet Map Function
 // ==========================
 let leafletMap;
-
 function initLeafletMap() {
   if (!leafletMap) {
     leafletMap = L.map("map-container").setView([23.8103, 90.4125], 11);
-
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(leafletMap);
   }
 
-  // Custom Icons
-  const receiverIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/3177/3177361.png",
-    iconSize: [35, 35],
-    iconAnchor: [17, 34],
-    popupAnchor: [0, -30],
-  });
+  const receiverIcon = L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/3177/3177361.png", iconSize: [35, 35], iconAnchor: [17, 34], popupAnchor: [0, -30] });
+  const donorIcon = L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149071.png", iconSize: [35, 35], iconAnchor: [17, 34], popupAnchor: [0, -30] });
 
-  const donorIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-    iconSize: [35, 35],
-    iconAnchor: [17, 34],
-    popupAnchor: [0, -30],
-  });
-
-  // Receiver location
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const userLat = pos.coords.latitude;
-      const userLng = pos.coords.longitude;
-
-      leafletMap.setView([userLat, userLng], 13);
-
-      // Receiver marker
-      L.marker([userLat, userLng], { icon: receiverIcon })
-        .addTo(leafletMap)
-        .bindPopup("<b>You are here</b>")
-        .openPopup();
-
-      // Donors from backend
-      fetch("/donor/donors-json/")
-        .then((res) => res.json())
-        .then((data) => {
-          data.donors.forEach((donor) => {
-            L.marker([donor.lat, donor.lng], { icon: donorIcon })
-              .addTo(leafletMap)
-              .bindPopup(`<b>${donor.name}</b><br>Blood Group: ${donor.blood_group}`);
-          });
-        });
-    });
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const [userLat, userLng] = [pos.coords.latitude, pos.coords.longitude];
+        leafletMap.setView([userLat, userLng], 13);
+        L.marker([userLat, userLng], { icon: receiverIcon }).addTo(leafletMap).bindPopup("<b>You are here</b>").openPopup();
+        fetch("/donor/donors-json/")
+          .then((res) => res.json())
+          .then((data) => data.donors.forEach((donor) => L.marker([donor.lat, donor.lng], { icon: donorIcon }).addTo(leafletMap).bindPopup(`<b>${donor.name}</b><br>Blood Group: ${donor.blood_group}`)));
+      },
+      (err) => console.warn("Geolocation denied:", err)
+    );
   }
 }
 
@@ -518,14 +421,7 @@ const hamburger = document.querySelector(".hamburger");
 const mobileMenu = document.getElementById("mobileMenu");
 const closeBtn = document.querySelector(".close-btn");
 
-if (hamburger && mobileMenu) {
-  hamburger.addEventListener("click", () => {
-    mobileMenu.style.width = "70%"; // open
-  });
-}
+if (hamburger && mobileMenu) hamburger.addEventListener("click", () => (mobileMenu.style.width = "70%"));
+if (closeBtn && mobileMenu) closeBtn.addEventListener("click", () => (mobileMenu.style.width = "0"));
 
-if (closeBtn && mobileMenu) {
-  closeBtn.addEventListener("click", () => {
-    mobileMenu.style.width = "0"; // close
-  });
-}
+

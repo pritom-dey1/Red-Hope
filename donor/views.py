@@ -11,6 +11,7 @@ from django.db import models
 from datetime import timedelta
 from django.utils import timezone
 import random
+from django_ratelimit.decorators import ratelimit
 from .models import Donor
 
 def donor_list(request):
@@ -26,7 +27,6 @@ def donor_list(request):
     ]
     return JsonResponse({"donors": data})
 
-# --- তোমার সব models একসাথে import করা হলো ---
 from .models import (
     Profile,
     RequestPost,
@@ -56,9 +56,9 @@ def poll_messages(request, user_id):
         {
             "id": m.id,
             "sender_id": m.sender.id,
-            "sender_username": m.sender.username,   # 🔥 Added
+            "sender_username": m.sender.username,   # 
             "receiver_id": m.receiver.id,
-            "receiver_username": m.receiver.username,  # 🔥 Added
+            "receiver_username": m.receiver.username, 
             "message": m.message,
             "created_at": m.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         }
@@ -84,9 +84,9 @@ def send_message(request, user_id):
         return JsonResponse({
             "id": m.id,
             "sender_id": m.sender.id,
-            "sender_username": m.sender.username,   # 🔥 Added
+            "sender_username": m.sender.username,   
             "receiver_id": m.receiver.id,
-            "receiver_username": m.receiver.username,  # 🔥 Added
+            "receiver_username": m.receiver.username,  
             "message": m.message,
             "created_at": m.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         })
@@ -102,7 +102,7 @@ def chat_users(request):
         data.append({
             "id": u.id,
             "username": u.username,
-            "profile_pic": profile_pic,   # 🔥 Added
+            "profile_pic": profile_pic,  
         })
     return JsonResponse({"users": data})
 
@@ -119,9 +119,9 @@ def chat_history(request, user_id):
         {
             "id": m.id,
             "sender_id": m.sender.id,
-            "sender_username": m.sender.username,   # 🔥 Added
+            "sender_username": m.sender.username,  
             "receiver_id": m.receiver.id,
-            "receiver_username": m.receiver.username,  # 🔥 Added
+            "receiver_username": m.receiver.username,  
             "message": m.message,
             "created_at": m.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         }
@@ -157,12 +157,10 @@ verification_codes = {}
 def donate_now(request, post_id):
     post = get_object_or_404(RequestPost, id=post_id)
 
-    # শুধু Donor role check
     if request.user.profile.role != "donor":
         messages.error(request, "Only donors can donate.")
         return redirect("pluse")
 
-    # Donor এর শেষ approved donation বের করা
     last_approved = DonationRequest.objects.filter(
         donor=request.user, status="approved"
     ).order_by("-created_at").first()
@@ -192,12 +190,12 @@ def donate_now(request, post_id):
             last_donation_date=last_date if last_date else None,
         )
 
-        # 🔔 Receiver (post owner) এর জন্য notification তৈরি করো
+ 
         from .models import Notification
         Notification.objects.create(
             user=post.user,  # Post owner = Receiver
             message=f"{request.user.username} sent a donation request for your post ({post.blood_group}, {post.location})",
-            link=f"/receiver_dashboard/"  # চাইলে নির্দিষ্ট donation request এ link করতে পারো
+            link=f"/receiver_dashboard/" 
         )
 
         return redirect("donation_pending", donation.id)
@@ -230,11 +228,9 @@ def approve_donation(request, donation_id):
     donation.status = "approved"
     donation.save()
 
-    # Post কে Donated mark করা
     donation.post.post_type = "donated"
     donation.post.save()
 
-    # Donor কে মেইল পাঠানো হবে
     send_mail(
         "Your Donation Request Approved",
         f"Hi {donation.name}, your donation request for {donation.post.name} has been approved. Please proceed to donate.",
@@ -284,9 +280,14 @@ def get_comments(request, post_id):
     ]
     return JsonResponse({"comments": data})
 
-
+@ratelimit(key='ip', rate='3/h', block=False)
 @csrf_exempt
 def add_comment(request, post_id):
+    was_limited = getattr(request, 'limited', False)
+    if was_limited:
+        return render(request, "limit_exceeded.html", {"message": "Too many login attempts. Please try again later."})
+
+    
     if request.method == "POST" and request.user.is_authenticated:
         text = request.POST.get("text")
         post = get_object_or_404(RequestPost, id=post_id)
@@ -354,8 +355,11 @@ def verify(request, username):
 
     return render(request, "donor/verify.html", {"username": username})
 
-
+@ratelimit(key='ip', rate='3/h', block=False)
 def register(request):
+    was_limited = getattr(request, 'limited', False)
+    if was_limited:
+        return render(request, "donor/limit_exceeded.html", {"message": "Too many registration attempts. Please try again later."})
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
@@ -392,8 +396,11 @@ def register(request):
 
     return render(request, "donor/registration.html")
 
-
+@ratelimit(key='ip', rate='3/h', block=False)
 def login_view(request):
+    was_limited = getattr(request, 'limited', False)
+    if was_limited:
+        return render(request, "donor/limit_exceeded.html", {"message": "Too many registration attempts. Please try again later."})
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -469,7 +476,6 @@ def receiver_dashboard(request):
         location = request.POST.get("location")
 
         if name and problem and blood_group and location:
-            # নতুন request তৈরি
             post = RequestPost.objects.create(
                 user=request.user,
                 name=name,
@@ -479,9 +485,7 @@ def receiver_dashboard(request):
                 post_type="receiver",
             )
 
-            # =========================
-            # 🔔 সব donor কে notification পাঠাও
-            # =========================
+           
             from .models import Profile, Notification
 
             donors = Profile.objects.filter(role="donor")
@@ -489,7 +493,7 @@ def receiver_dashboard(request):
                 Notification.objects.create(
                     user=donor.user,
                     message=f"{request.user.username} requested {blood_group} blood at {location}",
-                    link="/pluse/"  # সব donor কে Pulse feed এ পাঠানো হবে
+                    link="/pluse/"  
                 )
 
             messages.success(request, "Blood request posted successfully!")
@@ -554,7 +558,11 @@ def register_view(request):
 # =========================
 # Contact Form (AJAX)
 # =========================
+@ratelimit(key='ip', rate='5/m', block=False)
 def save_contact(request):
+    was_limited = getattr(request, 'limited', False)
+    if was_limited:
+        return render(request, "donor/limit_exceeded.html", {"message": "Too many messages sent. Please wait a while."})
     if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")

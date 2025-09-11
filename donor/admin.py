@@ -79,6 +79,5 @@ class CustomUserAdmin(UserAdmin):
     inlines = (ProfileInline,)
 
 
-# Default User unregister + register again with inline Profile
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
