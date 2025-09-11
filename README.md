@@ -115,7 +115,7 @@ python manage.py createsuperuser
 python manage.py runserver
 
 ---
-
+```
 ## 👨‍💻 Developer
 
 - Name: Pritom Dey 
