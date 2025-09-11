@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-)wddrh^se1i4g-0#d@_gdu5l%6)!o6_d*k$@e&2kpx^peoq)$w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["zero-boundaries-hackathon.onrender.com", "localhost", "127.0.0.1"]
 
@@ -127,10 +127,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-# 👇 এইটা যোগ কর collectstatic কাজ করার জন্য
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# (Optional) যদি development এ extra static dir থাকে
 STATICFILES_DIRS = [
     BASE_DIR / 'donor' / 'static',
 ]
