@@ -280,12 +280,12 @@ def get_comments(request, post_id):
     ]
     return JsonResponse({"comments": data})
 
-@ratelimit(key='ip', rate='3/h', block=False)
+# @ratelimit(key='ip', rate='3/h', block=False)
 @csrf_exempt
 def add_comment(request, post_id):
-    was_limited = getattr(request, 'limited', False)
-    if was_limited:
-        return render(request, "limit_exceeded.html", {"message": "Too many login attempts. Please try again later."})
+    # was_limited = getattr(request, 'limited', False)
+    # if was_limited:
+    #     return render(request, "limit_exceeded.html", {"message": "Too many login attempts. Please try again later."})
 
     
     if request.method == "POST" and request.user.is_authenticated:
@@ -355,11 +355,9 @@ def verify(request, username):
 
     return render(request, "donor/verify.html", {"username": username})
 
-@ratelimit(key='ip', rate='3/h', block=False)
+
 def register(request):
-    was_limited = getattr(request, 'limited', False)
-    if was_limited:
-        return render(request, "donor/limit_exceeded.html", {"message": "Too many registration attempts. Please try again later."})
+  
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
@@ -396,11 +394,11 @@ def register(request):
 
     return render(request, "donor/registration.html")
 
-@ratelimit(key='ip', rate='3/h', block=False)
+# @ratelimit(key='ip', rate='3/h', block=False)
 def login_view(request):
-    was_limited = getattr(request, 'limited', False)
-    if was_limited:
-        return render(request, "donor/limit_exceeded.html", {"message": "Too many registration attempts. Please try again later."})
+    # was_limited = getattr(request, 'limited', False)
+    # if was_limited:
+    #     return render(request, "donor/limit_exceeded.html", {"message": "Too many registration attempts. Please try again later."})
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
