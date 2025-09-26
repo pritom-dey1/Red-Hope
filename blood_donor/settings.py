@@ -11,11 +11,13 @@ SECRET_KEY = 'django-insecure-)wddrh^se1i4g-0#d@_gdu5l%6)!o6_d*k$@e&2kpx^peoq)$w
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["zero-boundaries-hackathon.onrender.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["zero-boundaries-hackathon-t11d.onrender.com", "localhost", "127.0.0.1"]
 
 
 
 INSTALLED_APPS = [
+
+     "jazzmin",
     'django.contrib.admin',
     'django.contrib.auth',
     'django_extensions',
@@ -26,6 +28,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles'
     
 ]
+JAZZMIN_SETTINGS = {
+    "site_title": "Red Hope Admin Panel",
+    "site_header": "RED HOPE",
+    "site_brand": "RED HOPE",
+    "welcome_sign": "Welcome to My Admin",
+    "show_sidebar": True,
+    "navigation_expanded": True,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

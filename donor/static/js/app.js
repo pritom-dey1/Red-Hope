@@ -425,3 +425,9 @@ if (hamburger && mobileMenu) hamburger.addEventListener("click", () => (mobileMe
 if (closeBtn && mobileMenu) closeBtn.addEventListener("click", () => (mobileMenu.style.width = "0"));
 
 
+function showToast(msg = "Please log in", duration = 2000) {
+    const toast = document.getElementById("toast");
+    toast.innerText = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), duration);
+}
